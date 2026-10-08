@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="@@LANG@@">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-@@HASH@@'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; connect-src 'none'">
+<title>@@TITLE@@ · NextStep</title>
+<style>@@CSS@@</style>
+</head>
+<body>
+<main>
+<header><span class="brand">NextStep / 01</span><p id="privacy"></p><h1 id="title">@@TITLE@@</h1><p id="goal"></p></header>
+<section class="focus" aria-labelledby="focus-label"><p id="focus-label" class="eyebrow"></p><h2 id="now"></h2><p id="action"></p><p id="criterion"></p><div id="controls"></div></section>
+<p id="progress" role="status" aria-live="polite"></p>
+<p id="message" role="alert"></p><p id="storage" class="muted"></p>
+<details id="map"><summary id="map-label"></summary><svg id="graph" aria-hidden="true"></svg><ol id="steps"></ol></details>
+<footer><button id="export" type="button"></button><label id="import-label" for="import"></label><input id="import" type="file" accept=".json,application/json"><p id="boundary" class="muted"></p></footer>
+<noscript><p>JavaScript is disabled. Actions and completion criteria are available below; progress controls need JavaScript.</p><ol>@@FALLBACK@@</ol></noscript>
+</main>
+<script id="plan" type="application/json">@@PLAN@@</script>
+<script id="identity" type="application/json">"@@ID@@"</script>
+<script>@@JS@@</script>
+</body>
+</html>

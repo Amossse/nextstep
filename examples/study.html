@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-N3j0XOa+7L7kmQ4NdYqb4QrWqGcbienCB7aWF0NMgVk='; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; connect-src 'none'">
+<title>做一张能用的学习卡片 · NextStep</title>
+<style>:root{color-scheme:light;--paper:#f7f8f3;--ink:#192e29;--line:#bcc9c0;--focus:#e8f28c}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.6 system-ui,sans-serif}
+main{max-width:850px;padding:48px 28px;margin:auto}.brand{letter-spacing:.15em;font-size:13px;font-weight:750}
+h1{font-size:clamp(30px,5vw,48px);line-height:1.2;overflow-wrap:anywhere}h2{line-height:1.35;font-size:24px;overflow-wrap:anywhere}
+p{white-space:pre-wrap;overflow-wrap:anywhere}.eyebrow{font-weight:750;letter-spacing:.06em;font-size:14px}
+.focus{background:var(--focus);border-left:5px solid var(--ink);padding:18px 24px;margin:32px 0 20px}
+button,input{font:inherit}button{background:var(--ink);color:white;border:2px solid var(--ink);border-radius:4px;padding:9px 16px;cursor:pointer;min-height:44px;margin:4px 10px 4px 0}
+button.secondary{background:transparent;color:var(--ink)}button:disabled{opacity:.5;cursor:default}
+:focus-visible{outline:3px solid #1c568f;outline-offset:4px}textarea{font:inherit;display:block;width:100%;min-height:80px;border:1px solid var(--line);padding:10px;background:white}
+.muted{font-size:14px;color:#455e54}#message{color:#8b2424}summary{cursor:pointer;min-height:44px;padding:12px 0;font-weight:700}
+svg{display:block;width:100%;height:auto}ol{padding-left:26px}li{padding:15px 10px;border-top:1px solid var(--line)}li h3{margin:4px 0;font-size:19px}
+.status{font-size:14px;font-weight:700}.deps{font-size:14px}footer{border-top:1px solid var(--line);margin-top:30px;padding-top:20px}
+footer label{display:block;margin:12px 0 4px}input[type=file]{max-width:100%}#privacy{font-size:13px;float:right;margin:0}
+@media(max-width:550px){main{padding:24px 18px}.focus{padding:14px 16px}#privacy{float:none;margin-top:12px}svg{display:none}}
+@media print{button,input,footer label,#storage,#message{display:none}details{display:block}.focus{background:white}svg{display:none}}
+</style>
+</head>
+<body>
+<main>
+<header><span class="brand">NextStep / 01</span><p id="privacy"></p><h1 id="title">做一张能用的学习卡片</h1><p id="goal"></p></header>
+<section class="focus" aria-labelledby="focus-label"><p id="focus-label" class="eyebrow"></p><h2 id="now"></h2><p id="action"></p><p id="criterion"></p><div id="controls"></div></section>
+<p id="progress" role="status" aria-live="polite"></p>
+<p id="message" role="alert"></p><p id="storage" class="muted"></p>
+<details id="map"><summary id="map-label"></summary><svg id="graph" aria-hidden="true"></svg><ol id="steps"></ol></details>
+<footer><button id="export" type="button"></button><label id="import-label" for="import"></label><input id="import" type="file" accept=".json,application/json"><p id="boundary" class="muted"></p></footer>
+<noscript><p>JavaScript is disabled. Actions and completion criteria are available below; progress controls need JavaScript.</p><ol><li><h2>选一小段材料</h2><p>打开你选的公开科普文章，只选一个短段落。</p><p>确定要读的段落，暂时不打开其他材料。</p></li><li><h2>读完并挑一个问题</h2><p>读选定段落，写下你想回答的一个问题。</p><p>有一个明确的问题，不需要一次整理全文。</p></li><li><h2>用自己的话写答案</h2><p>在纸上或你已有的笔记工具里写一个短答案，再补一个例子。</p><p>卡片上有问题、短答案和一个例子。</p></li><li><h2>合上材料再回答一次</h2><p>只看卡片上的问题，尝试口头回答；想不起来就回到原段落核对。</p><p>完成一次自测，并标明仍不确定的地方。</p></li></ol></noscript>
+</main>
+<script id="plan" type="application/json">{"goal":"\u865a\u6784\u793a\u4f8b\uff1a\u8bfb\u4e00\u5c0f\u6bb5\u79d1\u666e\u6750\u6599\uff0c\u7528\u81ea\u5df1\u7684\u8bdd\u505a\u4e00\u5f20\u95ee\u7b54\u5361\u7247\u3002","language":"zh","steps":[{"action":"\u6253\u5f00\u4f60\u9009\u7684\u516c\u5f00\u79d1\u666e\u6587\u7ae0\uff0c\u53ea\u9009\u4e00\u4e2a\u77ed\u6bb5\u843d\u3002","depends_on":[],"done_when":"\u786e\u5b9a\u8981\u8bfb\u7684\u6bb5\u843d\uff0c\u6682\u65f6\u4e0d\u6253\u5f00\u5176\u4ed6\u6750\u6599\u3002","id":"choose","title":"\u9009\u4e00\u5c0f\u6bb5\u6750\u6599"},{"action":"\u8bfb\u9009\u5b9a\u6bb5\u843d\uff0c\u5199\u4e0b\u4f60\u60f3\u56de\u7b54\u7684\u4e00\u4e2a\u95ee\u9898\u3002","depends_on":["choose"],"done_when":"\u6709\u4e00\u4e2a\u660e\u786e\u7684\u95ee\u9898\uff0c\u4e0d\u9700\u8981\u4e00\u6b21\u6574\u7406\u5168\u6587\u3002","id":"read","title":"\u8bfb\u5b8c\u5e76\u6311\u4e00\u4e2a\u95ee\u9898"},{"action":"\u5728\u7eb8\u4e0a\u6216\u4f60\u5df2\u6709\u7684\u7b14\u8bb0\u5de5\u5177\u91cc\u5199\u4e00\u4e2a\u77ed\u7b54\u6848\uff0c\u518d\u8865\u4e00\u4e2a\u4f8b\u5b50\u3002","depends_on":["read"],"done_when":"\u5361\u7247\u4e0a\u6709\u95ee\u9898\u3001\u77ed\u7b54\u6848\u548c\u4e00\u4e2a\u4f8b\u5b50\u3002","id":"card","title":"\u7528\u81ea\u5df1\u7684\u8bdd\u5199\u7b54\u6848"},{"action":"\u53ea\u770b\u5361\u7247\u4e0a\u7684\u95ee\u9898\uff0c\u5c1d\u8bd5\u53e3\u5934\u56de\u7b54\uff1b\u60f3\u4e0d\u8d77\u6765\u5c31\u56de\u5230\u539f\u6bb5\u843d\u6838\u5bf9\u3002","depends_on":["card"],"done_when":"\u5b8c\u6210\u4e00\u6b21\u81ea\u6d4b\uff0c\u5e76\u6807\u660e\u4ecd\u4e0d\u786e\u5b9a\u7684\u5730\u65b9\u3002","id":"check","title":"\u5408\u4e0a\u6750\u6599\u518d\u56de\u7b54\u4e00\u6b21"}],"title":"\u505a\u4e00\u5f20\u80fd\u7528\u7684\u5b66\u4e60\u5361\u7247"}</script>
+<script id="identity" type="application/json">"01623cc44ce3b72301ab020e29ecb0ca28eca118c915d304c6eb416741ecc74c"</script>
+<script>"use strict";
+const plan = JSON.parse(document.getElementById("plan").textContent);
+const planId = JSON.parse(document.getElementById("identity").textContent);
+const $ = id => document.getElementById(id);
+const zh = plan.language === "zh";
+const copy = zh ? {
+  privacy:"离线行动图 · 不联网", focus:"现在只看这一步", done:"标记完成", block:"记录阻塞",
+  resume:"解除阻塞", reopen:"撤销完成", reason:"哪里卡住了？", reasonNeeded:"请先填写阻塞原因。",
+  criterion:"完成标准：", all:"查看全图与步骤", export:"导出进度", import:"导入本计划的进度 JSON",
+  pending:"可开始", waiting:"等待前置步骤", blocked:"受阻", completed:"已完成", dependency:"依赖：",
+  complete:"全部步骤已标记完成", completeBody:"这是你的进度记录，不代表 Agent 已验证实际结果。",
+  stalled:"先解除阻塞", progress:"已完成", saved:"进度已保存在当前浏览器。重要进度请导出备份。",
+  noStorage:"浏览器无法保存进度。关闭页面前请导出 JSON，下次导入继续。",
+  invalid:"进度文件无效、过大或不属于此计划。原进度未修改。", reopened:"请先撤销已完成的后续步骤。",
+  boundary:"标记仅由你操作，不执行任务。文件含计划全文；进度导出含阻塞备注，请勿直接公开。"
+} : {
+  privacy:"Offline action map · No network", focus:"One next action", done:"Mark done", block:"Record blocker",
+  resume:"Unblock", reopen:"Undo completion", reason:"What is blocking you?", reasonNeeded:"Enter a blocker first.",
+  criterion:"Done when: ", all:"Open map and steps", export:"Export progress", import:"Import this plan's progress JSON",
+  pending:"Ready", waiting:"Waiting for prerequisites", blocked:"Blocked", completed:"Done", dependency:"Depends on: ",
+  complete:"All steps marked done", completeBody:"Your progress record, not an Agent's verification of actual results.",
+  stalled:"Resolve a blocker first", progress:"Completed", saved:"Saved in this browser. Export important progress as a backup.",
+  noStorage:"Browser storage unavailable. Export JSON before closing; import it to resume.",
+  invalid:"Invalid, oversized, or different-plan progress. Existing progress unchanged.", reopened:"Undo completed dependent steps first.",
+  boundary:"Only your actions change status. No tasks are executed. HTML contains the full plan; exports include blocker notes. Keep them private."
+};
+const key = "nextstep-v1-" + planId;
+const fresh = () => ({version:1, plan_id:planId, steps:plan.steps.map(s => ({id:s.id, status:"pending", reason:""}))});
+let state = fresh();
+function checked(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value) ||
+      Object.keys(value).sort().join() !== "plan_id,steps,version" || value.version !== 1 ||
+      value.plan_id !== planId || !Array.isArray(value.steps) || value.steps.length !== plan.steps.length) throw Error("invalid");
+  value.steps.forEach((s,i) => {
+    if (!s || Object.keys(s).sort().join() !== "id,reason,status" || s.id !== plan.steps[i].id ||
+        !["pending","done","blocked"].includes(s.status) || typeof s.reason !== "string" || s.reason.length > 1000 ||
+        (s.status === "blocked" && !s.reason.trim()) || (s.status !== "blocked" && s.reason !== "")) throw Error("invalid");
+    if (s.status === "done" && plan.steps[i].depends_on.some(d => value.steps.find(x => x.id === d).status !== "done")) throw Error("dependency");
+  });
+  return value;
+}
+let storageAvailable = true;
+let rejectedStoredState = false;
+try { const raw = localStorage.getItem(key); if (raw) state = checked(JSON.parse(raw)); }
+catch (_) { storageAvailable = false; rejectedStoredState = true; $("message").textContent = copy.invalid; }
+const record = id => state.steps.find(s => s.id === id);
+const ready = s => s.depends_on.every(d => record(d).status === "done");
+const status = s => record(s.id).status === "done" ? copy.completed : record(s.id).status === "blocked" ? copy.blocked : ready(s) ? copy.pending : copy.waiting;
+function save() {
+  try { localStorage.setItem(key, JSON.stringify(state)); storageAvailable = true; }
+  catch (_) { storageAvailable = false; }
+  $("storage").textContent = storageAvailable ? copy.saved : copy.noStorage;
+}
+function element(tag, value, parent) { const e = document.createElement(tag); e.textContent = value; parent.append(e); return e; }
+function button(label, callback, parent, secondary=false) {
+  const e = element("button",label,parent); e.type="button"; if (secondary) e.className="secondary";
+  e.addEventListener("click",callback); return e;
+}
+function change(id, value, reason="") {
+  const step = plan.steps.find(s => s.id === id);
+  if (value === "done" && !ready(step)) return;
+  if (value === "pending" && record(id).status === "done" && plan.steps.some(s => s.depends_on.includes(id) && record(s.id).status === "done")) {
+    $("message").textContent=copy.reopened; return;
+  }
+  record(id).status=value; record(id).reason=reason;
+  $("message").textContent=""; save(); draw();
+  // Rebuilt buttons would otherwise leave keyboard focus on the document body.
+  $("now").focus();
+}
+function controls(step, parent) {
+  const r = record(step.id);
+  if (r.status === "done") { button(copy.reopen,()=>change(step.id,"pending"),parent,true); return; }
+  if (r.status === "blocked") {
+    element("p",r.reason,parent); button(copy.resume,()=>change(step.id,"pending"),parent,true); return;
+  }
+  if (!ready(step)) return;
+  button(copy.done,()=>change(step.id,"done"),parent);
+  const details = element("details","",parent); element("summary",copy.block,details);
+  const label = element("label",copy.reason,details);
+  const area = element("textarea","",details); area.maxLength=1000; area.id="reason-"+step.id; label.htmlFor=area.id;
+  button(copy.block,()=>{
+    const reason=area.value.trim(); if (!reason) { $("message").textContent=copy.reasonNeeded; area.focus(); return; }
+    change(step.id,"blocked",reason);
+  },details,true);
+}
+function svg(tag, attrs, value="") {
+  const e=document.createElementNS("http://www.w3.org/2000/svg",tag);
+  for (const [k,v] of Object.entries(attrs)) e.setAttribute(k,v);
+  e.textContent=value; $("graph").append(e); return e;
+}
+function draw() {
+  const done=state.steps.filter(s=>s.status==="done").length;
+  const current=plan.steps.find(s=>record(s.id).status==="pending" && ready(s));
+  const blocked=plan.steps.find(s=>record(s.id).status==="blocked");
+  const active=current || blocked;
+  $("progress").textContent=copy.progress+" "+done+" / "+plan.steps.length;
+  $("now").textContent=current ? current.title : blocked ? copy.stalled+" · "+blocked.title : copy.complete;
+  $("action").textContent=active ? active.action : copy.completeBody;
+  $("criterion").textContent=active ? copy.criterion+active.done_when : "";
+  $("controls").replaceChildren(); if (active) controls(active,$("controls"));
+  $("steps").replaceChildren(); $("graph").replaceChildren();
+  $("graph").setAttribute("viewBox","0 0 700 "+(plan.steps.length*100+12));
+  plan.steps.forEach((s,i)=>{
+    const y=i*100+8;
+    s.depends_on.forEach(dep=>{
+      const source=plan.steps.findIndex(x=>x.id===dep);
+      if (source+1===i) {
+        svg("path",{d:`M 390 ${source*100+82} V ${y-4}`,fill:"none",stroke:"#667f73","stroke-width":1.5});
+        svg("path",{d:`M 386 ${y-5} L 390 ${y+2} L 394 ${y-5}`,fill:"none",stroke:"#667f73"});
+      } else {
+        // ponytail: fixed lanes for at most 12 nodes; text is authoritative for dense graphs.
+        const rail=10+source*7;
+        svg("path",{d:`M 110 ${source*100+45} H ${rail} V ${y+35} H 104`,fill:"none",stroke:"#667f73","stroke-width":1.5});
+        svg("path",{d:`M 100 ${y+31} L 108 ${y+35} L 100 ${y+39}`,fill:"none",stroke:"#667f73"});
+      }
+    });
+  });
+  plan.steps.forEach((s,i)=>{
+    const y=i*100+8;
+    svg("rect",{x:110,y,width:570,height:74,rx:4,fill:s===active ? "#e8f28c" : "#f7f8f3",stroke:"#617a6e"});
+    svg("text",{x:128,y:y+29,fill:"#192e29","font-size":18},s.title.length>26?s.title.slice(0,25)+"…":s.title);
+    svg("text",{x:128,y:y+55,fill:"#455e54","font-size":14},status(s));
+    const li=element("li","",$("steps")); element("span",status(s),li).className="status";
+    element("h3",s.title,li); element("p",s.action,li); element("p",copy.criterion+s.done_when,li);
+    if (s.depends_on.length) element("p",copy.dependency+s.depends_on.map(d=>plan.steps.find(x=>x.id===d).title).join(" · "),li).className="deps";
+    // Controls exist only in the focus panel; each blocker label has one unique id.
+    if (record(s.id).status==="done") button(copy.reopen,()=>change(s.id,"pending"),li,true);
+    if (record(s.id).status==="blocked" && s!==active) { element("p",record(s.id).reason,li); button(copy.resume,()=>change(s.id,"pending"),li,true); }
+  });
+}
+$("title").textContent=plan.title; $("goal").textContent=plan.goal;
+for (const [id,value] of Object.entries({privacy:copy.privacy,"focus-label":copy.focus,"map-label":copy.all,export:copy.export,"import-label":copy.import,boundary:copy.boundary})) $(id).textContent=value;
+$("now").tabIndex=-1;
+$("export").addEventListener("click",()=>{
+  const url=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:"application/json"}));
+  const link=document.createElement("a"); link.href=url; link.download="nextstep-progress.json"; link.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+$("import").addEventListener("change",async event=>{
+  const file=event.target.files[0]; if (!file) return;
+  try {
+    if (file.size>128*1024) throw Error("large");
+    const next=checked(JSON.parse(await file.text()));
+    if (!confirm(zh ? "用导入的进度替换当前进度？请先导出重要记录。" : "Replace current progress? Export important progress first.")) return;
+    state=next; $("message").textContent=""; save(); draw();
+  } catch (_) { $("message").textContent=copy.invalid; }
+  finally { event.target.value=""; }
+});
+draw();
+// Do not silently overwrite rejected saved data just by opening the page.
+if (!rejectedStoredState) save();
+else $("storage").textContent=copy.noStorage;
+</script>
+</body>
+</html>

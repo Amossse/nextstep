@@ -1,0 +1,152 @@
+"use strict";
+const plan = JSON.parse(document.getElementById("plan").textContent);
+const planId = JSON.parse(document.getElementById("identity").textContent);
+const $ = id => document.getElementById(id);
+const zh = plan.language === "zh";
+const copy = zh ? {
+  privacy:"离线行动图 · 不联网", focus:"现在只看这一步", done:"标记完成", block:"记录阻塞",
+  resume:"解除阻塞", reopen:"撤销完成", reason:"哪里卡住了？", reasonNeeded:"请先填写阻塞原因。",
+  criterion:"完成标准：", all:"查看全图与步骤", export:"导出进度", import:"导入本计划的进度 JSON",
+  pending:"可开始", waiting:"等待前置步骤", blocked:"受阻", completed:"已完成", dependency:"依赖：",
+  complete:"全部步骤已标记完成", completeBody:"这是你的进度记录，不代表 Agent 已验证实际结果。",
+  stalled:"先解除阻塞", progress:"已完成", saved:"进度已保存在当前浏览器。重要进度请导出备份。",
+  noStorage:"浏览器无法保存进度。关闭页面前请导出 JSON，下次导入继续。",
+  invalid:"进度文件无效、过大或不属于此计划。原进度未修改。", reopened:"请先撤销已完成的后续步骤。",
+  boundary:"标记仅由你操作，不执行任务。文件含计划全文；进度导出含阻塞备注，请勿直接公开。"
+} : {
+  privacy:"Offline action map · No network", focus:"One next action", done:"Mark done", block:"Record blocker",
+  resume:"Unblock", reopen:"Undo completion", reason:"What is blocking you?", reasonNeeded:"Enter a blocker first.",
+  criterion:"Done when: ", all:"Open map and steps", export:"Export progress", import:"Import this plan's progress JSON",
+  pending:"Ready", waiting:"Waiting for prerequisites", blocked:"Blocked", completed:"Done", dependency:"Depends on: ",
+  complete:"All steps marked done", completeBody:"Your progress record, not an Agent's verification of actual results.",
+  stalled:"Resolve a blocker first", progress:"Completed", saved:"Saved in this browser. Export important progress as a backup.",
+  noStorage:"Browser storage unavailable. Export JSON before closing; import it to resume.",
+  invalid:"Invalid, oversized, or different-plan progress. Existing progress unchanged.", reopened:"Undo completed dependent steps first.",
+  boundary:"Only your actions change status. No tasks are executed. HTML contains the full plan; exports include blocker notes. Keep them private."
+};
+const key = "nextstep-v1-" + planId;
+const fresh = () => ({version:1, plan_id:planId, steps:plan.steps.map(s => ({id:s.id, status:"pending", reason:""}))});
+let state = fresh();
+function checked(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value) ||
+      Object.keys(value).sort().join() !== "plan_id,steps,version" || value.version !== 1 ||
+      value.plan_id !== planId || !Array.isArray(value.steps) || value.steps.length !== plan.steps.length) throw Error("invalid");
+  value.steps.forEach((s,i) => {
+    if (!s || Object.keys(s).sort().join() !== "id,reason,status" || s.id !== plan.steps[i].id ||
+        !["pending","done","blocked"].includes(s.status) || typeof s.reason !== "string" || s.reason.length > 1000 ||
+        (s.status === "blocked" && !s.reason.trim()) || (s.status !== "blocked" && s.reason !== "")) throw Error("invalid");
+    if (s.status === "done" && plan.steps[i].depends_on.some(d => value.steps.find(x => x.id === d).status !== "done")) throw Error("dependency");
+  });
+  return value;
+}
+let storageAvailable = true;
+let rejectedStoredState = false;
+try { const raw = localStorage.getItem(key); if (raw) state = checked(JSON.parse(raw)); }
+catch (_) { storageAvailable = false; rejectedStoredState = true; $("message").textContent = copy.invalid; }
+const record = id => state.steps.find(s => s.id === id);
+const ready = s => s.depends_on.every(d => record(d).status === "done");
+const status = s => record(s.id).status === "done" ? copy.completed : record(s.id).status === "blocked" ? copy.blocked : ready(s) ? copy.pending : copy.waiting;
+function save() {
+  try { localStorage.setItem(key, JSON.stringify(state)); storageAvailable = true; }
+  catch (_) { storageAvailable = false; }
+  $("storage").textContent = storageAvailable ? copy.saved : copy.noStorage;
+}
+function element(tag, value, parent) { const e = document.createElement(tag); e.textContent = value; parent.append(e); return e; }
+function button(label, callback, parent, secondary=false) {
+  const e = element("button",label,parent); e.type="button"; if (secondary) e.className="secondary";
+  e.addEventListener("click",callback); return e;
+}
+function change(id, value, reason="") {
+  const step = plan.steps.find(s => s.id === id);
+  if (value === "done" && !ready(step)) return;
+  if (value === "pending" && record(id).status === "done" && plan.steps.some(s => s.depends_on.includes(id) && record(s.id).status === "done")) {
+    $("message").textContent=copy.reopened; return;
+  }
+  record(id).status=value; record(id).reason=reason;
+  $("message").textContent=""; save(); draw();
+  // Rebuilt buttons would otherwise leave keyboard focus on the document body.
+  $("now").focus();
+}
+function controls(step, parent) {
+  const r = record(step.id);
+  if (r.status === "done") { button(copy.reopen,()=>change(step.id,"pending"),parent,true); return; }
+  if (r.status === "blocked") {
+    element("p",r.reason,parent); button(copy.resume,()=>change(step.id,"pending"),parent,true); return;
+  }
+  if (!ready(step)) return;
+  button(copy.done,()=>change(step.id,"done"),parent);
+  const details = element("details","",parent); element("summary",copy.block,details);
+  const label = element("label",copy.reason,details);
+  const area = element("textarea","",details); area.maxLength=1000; area.id="reason-"+step.id; label.htmlFor=area.id;
+  button(copy.block,()=>{
+    const reason=area.value.trim(); if (!reason) { $("message").textContent=copy.reasonNeeded; area.focus(); return; }
+    change(step.id,"blocked",reason);
+  },details,true);
+}
+function svg(tag, attrs, value="") {
+  const e=document.createElementNS("http://www.w3.org/2000/svg",tag);
+  for (const [k,v] of Object.entries(attrs)) e.setAttribute(k,v);
+  e.textContent=value; $("graph").append(e); return e;
+}
+function draw() {
+  const done=state.steps.filter(s=>s.status==="done").length;
+  const current=plan.steps.find(s=>record(s.id).status==="pending" && ready(s));
+  const blocked=plan.steps.find(s=>record(s.id).status==="blocked");
+  const active=current || blocked;
+  $("progress").textContent=copy.progress+" "+done+" / "+plan.steps.length;
+  $("now").textContent=current ? current.title : blocked ? copy.stalled+" · "+blocked.title : copy.complete;
+  $("action").textContent=active ? active.action : copy.completeBody;
+  $("criterion").textContent=active ? copy.criterion+active.done_when : "";
+  $("controls").replaceChildren(); if (active) controls(active,$("controls"));
+  $("steps").replaceChildren(); $("graph").replaceChildren();
+  $("graph").setAttribute("viewBox","0 0 700 "+(plan.steps.length*100+12));
+  plan.steps.forEach((s,i)=>{
+    const y=i*100+8;
+    s.depends_on.forEach(dep=>{
+      const source=plan.steps.findIndex(x=>x.id===dep);
+      if (source+1===i) {
+        svg("path",{d:`M 390 ${source*100+82} V ${y-4}`,fill:"none",stroke:"#667f73","stroke-width":1.5});
+        svg("path",{d:`M 386 ${y-5} L 390 ${y+2} L 394 ${y-5}`,fill:"none",stroke:"#667f73"});
+      } else {
+        // ponytail: fixed lanes for at most 12 nodes; text is authoritative for dense graphs.
+        const rail=10+source*7;
+        svg("path",{d:`M 110 ${source*100+45} H ${rail} V ${y+35} H 104`,fill:"none",stroke:"#667f73","stroke-width":1.5});
+        svg("path",{d:`M 100 ${y+31} L 108 ${y+35} L 100 ${y+39}`,fill:"none",stroke:"#667f73"});
+      }
+    });
+  });
+  plan.steps.forEach((s,i)=>{
+    const y=i*100+8;
+    svg("rect",{x:110,y,width:570,height:74,rx:4,fill:s===active ? "#e8f28c" : "#f7f8f3",stroke:"#617a6e"});
+    svg("text",{x:128,y:y+29,fill:"#192e29","font-size":18},s.title.length>26?s.title.slice(0,25)+"…":s.title);
+    svg("text",{x:128,y:y+55,fill:"#455e54","font-size":14},status(s));
+    const li=element("li","",$("steps")); element("span",status(s),li).className="status";
+    element("h3",s.title,li); element("p",s.action,li); element("p",copy.criterion+s.done_when,li);
+    if (s.depends_on.length) element("p",copy.dependency+s.depends_on.map(d=>plan.steps.find(x=>x.id===d).title).join(" · "),li).className="deps";
+    // Controls exist only in the focus panel; each blocker label has one unique id.
+    if (record(s.id).status==="done") button(copy.reopen,()=>change(s.id,"pending"),li,true);
+    if (record(s.id).status==="blocked" && s!==active) { element("p",record(s.id).reason,li); button(copy.resume,()=>change(s.id,"pending"),li,true); }
+  });
+}
+$("title").textContent=plan.title; $("goal").textContent=plan.goal;
+for (const [id,value] of Object.entries({privacy:copy.privacy,"focus-label":copy.focus,"map-label":copy.all,export:copy.export,"import-label":copy.import,boundary:copy.boundary})) $(id).textContent=value;
+$("now").tabIndex=-1;
+$("export").addEventListener("click",()=>{
+  const url=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:"application/json"}));
+  const link=document.createElement("a"); link.href=url; link.download="nextstep-progress.json"; link.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+$("import").addEventListener("change",async event=>{
+  const file=event.target.files[0]; if (!file) return;
+  try {
+    if (file.size>128*1024) throw Error("large");
+    const next=checked(JSON.parse(await file.text()));
+    if (!confirm(zh ? "用导入的进度替换当前进度？请先导出重要记录。" : "Replace current progress? Export important progress first.")) return;
+    state=next; $("message").textContent=""; save(); draw();
+  } catch (_) { $("message").textContent=copy.invalid; }
+  finally { event.target.value=""; }
+});
+draw();
+// Do not silently overwrite rejected saved data just by opening the page.
+if (!rejectedStoredState) save();
+else $("storage").textContent=copy.noStorage;
