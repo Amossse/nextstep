@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Reject duplicate JSON fields at any depth before validating or rendering a plan.
+- Add CLI regressions for conflicting plan titles and nested completion criteria; no output is created on rejection.
+
 ## 0.1.0 — 2026-10-08
 
 - Original portable Skill and standard-library offline HTML/SVG renderer.

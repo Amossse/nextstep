@@ -72,13 +72,22 @@ def physical(path):
     return path
 
 
+def unique_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("duplicate JSON field")
+        result[key] = value
+    return result
+
+
 def load(path):
     path = physical(path)
     with path.open("rb") as stream:
         data = stream.read(128 * 1024 + 1)
     if len(data) > 128 * 1024:
         raise ValueError("plan exceeds 128 KiB")
-    return validate(json.loads(data))
+    return validate(json.loads(data, object_pairs_hook=unique_object))
 
 
 def render(plan):

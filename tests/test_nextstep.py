@@ -16,6 +16,21 @@ PLAN = json.loads((ROOT / "examples/study.json").read_text(encoding="utf-8"))
 
 
 class NextStep(unittest.TestCase):
+    def test_duplicate_json_fields_are_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            source = root / "plan.json"
+            for key in ("title", "done_when"):
+                with self.subTest(key=key):
+                    output = root / f"{key}.html"
+                    raw = json.dumps(PLAN).replace(f'"{key}":', f'"{key}":"fictional-marker","{key}":', 1)
+                    source.write_text(raw, encoding="utf-8")
+                    result = subprocess.run([sys.executable, str(ROOT / "scripts/nextstep.py"),
+                                             "render", str(source), "--out", str(output)], capture_output=True)
+                    self.assertEqual(result.returncode, 2)
+                    self.assertNotIn(b"fictional-marker", result.stderr)
+                    self.assertFalse(output.exists())
+
     def test_plan_and_safe_render(self):
         self.assertEqual(app.render(PLAN), (ROOT / "examples/study.html").read_text(encoding="utf-8"))
         reverse = {**PLAN, "steps": list(reversed(PLAN["steps"]))}

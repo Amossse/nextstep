@@ -50,6 +50,8 @@ The Agent proposes/structures the plan. The script validates and renders; it has
 does not independently understand documents. See [format.md](references/format.md) for exact fields.
 Human review matters: wrong prerequisites can make a plausible map misleading.
 
+Duplicate JSON fields, including nested step fields, are rejected before rendering instead of silently keeping the last value.
+
 ## Progress you can resume
 
 - Only user clicks change progress. Completion is a self-report, not verified execution.
