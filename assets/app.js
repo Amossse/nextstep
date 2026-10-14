@@ -47,6 +47,7 @@ const record = id => state.steps.find(s => s.id === id);
 const ready = s => s.depends_on.every(d => record(d).status === "done");
 const status = s => record(s.id).status === "done" ? copy.completed : record(s.id).status === "blocked" ? copy.blocked : ready(s) ? copy.pending : copy.waiting;
 function save() {
+  if (rejectedStoredState) { storageAvailable = false; $("storage").textContent = copy.noStorage; return; }
   try { localStorage.setItem(key, JSON.stringify(state)); storageAvailable = true; }
   catch (_) { storageAvailable = false; }
   $("storage").textContent = storageAvailable ? copy.saved : copy.noStorage;
@@ -142,7 +143,7 @@ $("import").addEventListener("change",async event=>{
     if (file.size>128*1024) throw Error("large");
     const next=checked(JSON.parse(await file.text()));
     if (!confirm(zh ? "用导入的进度替换当前进度？请先导出重要记录。" : "Replace current progress? Export important progress first.")) return;
-    state=next; $("message").textContent=""; save(); draw();
+    state=next; rejectedStoredState=false; $("message").textContent=""; save(); draw();
   } catch (_) { $("message").textContent=copy.invalid; }
   finally { event.target.value=""; }
 });

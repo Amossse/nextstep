@@ -40,7 +40,9 @@ def check():
         assert saved["steps"][1]["status"] == "blocked"
         page.get_by_role("button", name="解除阻塞", exact=True).click()
         assert page.locator("#now").inner_text() == "读完并挑一个问题"
-        page.on("dialog", lambda dialog: dialog.accept())
+        def accept_dialog(dialog):
+            dialog.accept()
+        page.on("dialog", accept_dialog)
         page.locator("#import").set_input_files(exported)
         expect(page.locator("#now")).to_contain_text("先解除阻塞")
         bad = root / "wrong.json"
@@ -74,6 +76,22 @@ def check():
         page.reload()
         assert page.evaluate("key => localStorage.getItem(key)", state_key) == "fictional corrupt state"
         assert page.locator("#message").inner_text()
+        page.get_by_role("button", name="标记完成", exact=True).click()
+        assert page.locator("#now").inner_text() == "读完并挑一个问题"
+        assert page.evaluate("key => localStorage.getItem(key)", state_key) == "fictional corrupt state"
+        with page.expect_download() as download:
+            page.get_by_role("button", name="导出进度").click()
+        recovered = root / "recovered.json"
+        download.value.save_as(recovered)
+        page.remove_listener("dialog", accept_dialog)
+        page.once("dialog", lambda dialog: dialog.dismiss())
+        page.locator("#import").set_input_files(recovered)
+        expect(page.locator("#import")).to_have_value("")
+        assert page.evaluate("key => localStorage.getItem(key)", state_key) == "fictional corrupt state"
+        page.once("dialog", lambda dialog: dialog.accept())
+        page.locator("#import").set_input_files(recovered)
+        expect(page.locator("#storage")).to_contain_text("进度已保存在当前浏览器")
+        assert json.loads(page.evaluate("key => localStorage.getItem(key)", state_key))["steps"][0]["status"] == "done"
         offline = browser.new_context()
         offline.add_init_script("Storage.prototype.setItem = function() { throw Error('unavailable'); };")
         fallback = offline.new_page()

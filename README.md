@@ -54,6 +54,8 @@ Duplicate JSON fields, including nested step fields, are rejected before renderi
 
 ## Progress you can resume
 
+If saved browser progress is corrupt, it is preserved even when you mark new progress. Export the new in-memory state, then explicitly confirm a valid import to resume saving; cancelling an import keeps the rejected data intact.
+
 - Only user clicks change progress. Completion is a self-report, not verified execution.
 - Steps unlock when their prerequisites are marked done. Independent ready steps use stable plan order.
 - Blockers require a note; unblocking returns a step to pending.
