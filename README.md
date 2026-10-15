@@ -93,6 +93,8 @@ python -m playwright install chromium
 python tests/browser_check.py
 ```
 
+The browser check also exports progress after storage-write failure, imports it in a separate browser context, and verifies resumption after reload. It does not guarantee local-file storage across all browsers.
+
 Tests use fictional inputs and temporary files. CI checks Python on Linux/macOS/Windows and Chromium on
 Linux. See [Actions](https://github.com/Amossse/nextstep/actions) and [validation boundaries](VALIDATION.md).
 Automated acceptance is not a user study or proof of improved attention/productivity.

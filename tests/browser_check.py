@@ -99,6 +99,20 @@ def check():
         assert "关闭页面前请导出" in fallback.locator("#storage").inner_text()
         fallback.get_by_role("button", name="标记完成", exact=True).click()
         assert fallback.locator("#now").inner_text() == "读完并挑一个问题"
+        # A successful in-memory click is not enough: the backup must resume
+        # in a different browser context with no access to the failed storage.
+        with fallback.expect_download() as download:
+            fallback.get_by_role("button", name="导出进度").click()
+        portable = root / "storage-unavailable-progress.json"
+        download.value.save_as(portable)
+        restored = browser.new_context().new_page()
+        restored.goto((ROOT / "examples/study.html").as_uri())
+        assert restored.locator("#progress").inner_text() == "已完成 0 / 4"
+        restored.once("dialog", lambda dialog: dialog.accept())
+        restored.locator("#import").set_input_files(portable)
+        expect(restored.locator("#progress")).to_have_text("已完成 1 / 4")
+        restored.reload()
+        assert restored.locator("#now").inner_text() == "读完并挑一个问题"
         disabled = browser.new_context(java_script_enabled=False)
         plain = disabled.new_page()
         plain.goto((ROOT / "examples/study.html").as_uri())

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Check that progress remains exportable when browser storage fails and resumes in a separate browser context, including after reload. Runtime behavior is unchanged.
+
 - Preserve rejected browser-local progress even after user actions; keep new progress in memory/export until a valid import is explicitly confirmed.
 - Cover cancelled and confirmed recovery imports in Chromium acceptance tests and refresh the fictional HTML example and its CSP hash.
 
