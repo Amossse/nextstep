@@ -141,7 +141,8 @@ $("import").addEventListener("change",async event=>{
   const file=event.target.files[0]; if (!file) return;
   try {
     if (file.size>128*1024) throw Error("large");
-    const next=checked(JSON.parse(await file.text()));
+    // Refuse malformed bytes instead of silently replacing blocker-note characters.
+    const next=checked(JSON.parse(new TextDecoder("utf-8",{fatal:true}).decode(await file.arrayBuffer())));
     if (!confirm(zh ? "用导入的进度替换当前进度？请先导出重要记录。" : "Replace current progress? Export important progress first.")) return;
     state=next; rejectedStoredState=false; $("message").textContent=""; save(); draw();
   } catch (_) { $("message").textContent=copy.invalid; }

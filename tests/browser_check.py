@@ -50,6 +50,14 @@ def check():
         page.locator("#import").set_input_files(bad)
         expect(page.locator("#message")).not_to_be_empty()
         assert "先解除阻塞" in page.locator("#now").inner_text()
+        invalid_encoding = root / "invalid-encoding.json"
+        corrupt = copy.deepcopy(saved)
+        corrupt["steps"][1]["reason"] = "fictional-encoding-marker"
+        invalid_encoding.write_bytes(json.dumps(corrupt).encode("utf-8").replace(b"fictional-encoding-marker", b"\xff"))
+        prior_storage = page.evaluate("JSON.stringify(localStorage)")
+        page.locator("#import").set_input_files(invalid_encoding)
+        expect(page.locator("#import")).to_have_value("")
+        assert page.evaluate("JSON.stringify(localStorage)") == prior_storage
         page.get_by_role("button", name="解除阻塞", exact=True).click()
         for _ in range(3):
             page.get_by_role("button", name="标记完成", exact=True).click()

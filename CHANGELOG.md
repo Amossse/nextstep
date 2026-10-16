@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Decode imported progress as strict UTF-8; malformed bytes are rejected without silently replacing blocker text or changing existing progress. Update the fictional HTML and CSP hash, with a browser regression.
+
 - Check that progress remains exportable when browser storage fails and resumes in a separate browser context, including after reload. Runtime behavior is unchanged.
 
 - Preserve rejected browser-local progress even after user actions; keep new progress in memory/export until a valid import is explicitly confirmed.

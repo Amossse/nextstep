@@ -94,6 +94,7 @@ python tests/browser_check.py
 ```
 
 The browser check also exports progress after storage-write failure, imports it in a separate browser context, and verifies resumption after reload. It does not guarantee local-file storage across all browsers.
+Progress JSON imports require valid UTF-8. Malformed bytes are refused before confirmation or replacement; re-export a valid backup rather than repairing unknown bytes by guesswork.
 
 Tests use fictional inputs and temporary files. CI checks Python on Linux/macOS/Windows and Chromium on
 Linux. See [Actions](https://github.com/Amossse/nextstep/actions) and [validation boundaries](VALIDATION.md).
