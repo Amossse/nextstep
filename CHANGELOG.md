@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Supersede pending progress imports when a newer file is selected; a slow older read cannot overwrite the newer result or clear its messages/input. Cover the read-order race in Chromium and refresh the fictional HTML/CSP hash.
+
 - Decode imported progress as strict UTF-8; malformed bytes are rejected without silently replacing blocker text or changing existing progress. Update the fictional HTML and CSP hash, with a browser regression.
 
 - Check that progress remains exportable when browser storage fails and resumes in a separate browser context, including after reload. Runtime behavior is unchanged.

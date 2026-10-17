@@ -137,16 +137,20 @@ $("export").addEventListener("click",()=>{
   const link=document.createElement("a"); link.href=url; link.download="nextstep-progress.json"; link.click();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 });
+let importRevision=0;
 $("import").addEventListener("change",async event=>{
+  const revision=++importRevision;
   const file=event.target.files[0]; if (!file) return;
   try {
     if (file.size>128*1024) throw Error("large");
     // Refuse malformed bytes instead of silently replacing blocker-note characters.
-    const next=checked(JSON.parse(new TextDecoder("utf-8",{fatal:true}).decode(await file.arrayBuffer())));
+    const bytes=await file.arrayBuffer();
+    if (revision!==importRevision) return; // A newer selection supersedes this read.
+    const next=checked(JSON.parse(new TextDecoder("utf-8",{fatal:true}).decode(bytes)));
     if (!confirm(zh ? "用导入的进度替换当前进度？请先导出重要记录。" : "Replace current progress? Export important progress first.")) return;
     state=next; rejectedStoredState=false; $("message").textContent=""; save(); draw();
-  } catch (_) { $("message").textContent=copy.invalid; }
-  finally { event.target.value=""; }
+  } catch (_) { if (revision===importRevision) $("message").textContent=copy.invalid; }
+  finally { if (revision===importRevision) event.target.value=""; }
 });
 draw();
 // Do not silently overwrite rejected saved data just by opening the page.

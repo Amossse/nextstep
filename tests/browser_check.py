@@ -121,6 +121,30 @@ def check():
         expect(restored.locator("#progress")).to_have_text("已完成 1 / 4")
         restored.reload()
         assert restored.locator("#now").inner_text() == "读完并挑一个问题"
+        # Delay the first file read until a later selection has already imported.
+        slow_state = copy.deepcopy(saved)
+        for step in slow_state["steps"]:
+            step.update(status="pending", reason="")
+        slow = root / "slow.json"
+        slow.write_text(json.dumps(slow_state), encoding="utf-8")
+        restored.evaluate("""() => {
+          const read = File.prototype.arrayBuffer;
+          File.prototype.arrayBuffer = function() {
+            if (this.name === 'slow.json') return new Promise(resolve => {
+              window.releaseSlowImport = async () => resolve(await read.call(this));
+            });
+            return read.call(this);
+          };
+        }""")
+        restored.on("dialog", lambda dialog: dialog.accept())
+        restored.locator("#import").set_input_files(slow)
+        restored.wait_for_function("typeof window.releaseSlowImport === 'function'")
+        restored.locator("#import").set_input_files(portable)
+        expect(restored.locator("#import")).to_have_value("")
+        restored.evaluate("async () => { await window.releaseSlowImport(); await new Promise(resolve => setTimeout(resolve, 0)); }")
+        expect(restored.locator("#progress")).to_have_text("已完成 1 / 4")
+        restored.reload()
+        assert restored.locator("#progress").inner_text() == "已完成 1 / 4"
         disabled = browser.new_context(java_script_enabled=False)
         plain = disabled.new_page()
         plain.goto((ROOT / "examples/study.html").as_uri())

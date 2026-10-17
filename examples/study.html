@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-aMqq6kLpxOWpo1tWTCMd7T9vtwYK2AqlZvE/xS4ttbs='; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; connect-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-twKbfADebrDw1IRDfVSpKMN0pGToLvhMwgxV0b4ay2E='; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; connect-src 'none'">
 <title>做一张能用的学习卡片 · NextStep</title>
 <style>:root{color-scheme:light;--paper:#f7f8f3;--ink:#192e29;--line:#bcc9c0;--focus:#e8f28c}
 *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.6 system-ui,sans-serif}
@@ -173,16 +173,20 @@ $("export").addEventListener("click",()=>{
   const link=document.createElement("a"); link.href=url; link.download="nextstep-progress.json"; link.click();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 });
+let importRevision=0;
 $("import").addEventListener("change",async event=>{
+  const revision=++importRevision;
   const file=event.target.files[0]; if (!file) return;
   try {
     if (file.size>128*1024) throw Error("large");
     // Refuse malformed bytes instead of silently replacing blocker-note characters.
-    const next=checked(JSON.parse(new TextDecoder("utf-8",{fatal:true}).decode(await file.arrayBuffer())));
+    const bytes=await file.arrayBuffer();
+    if (revision!==importRevision) return; // A newer selection supersedes this read.
+    const next=checked(JSON.parse(new TextDecoder("utf-8",{fatal:true}).decode(bytes)));
     if (!confirm(zh ? "用导入的进度替换当前进度？请先导出重要记录。" : "Replace current progress? Export important progress first.")) return;
     state=next; rejectedStoredState=false; $("message").textContent=""; save(); draw();
-  } catch (_) { $("message").textContent=copy.invalid; }
-  finally { event.target.value=""; }
+  } catch (_) { if (revision===importRevision) $("message").textContent=copy.invalid; }
+  finally { if (revision===importRevision) event.target.value=""; }
 });
 draw();
 // Do not silently overwrite rejected saved data just by opening the page.
