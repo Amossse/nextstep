@@ -64,6 +64,8 @@ If saved browser progress is corrupt, it is preserved even when you mark new pro
 - Editing the plan creates a different fingerprint; old progress is not migrated. Undoing a prerequisite
   is refused while a direct dependent is marked done; undo from the end of the path first.
 
+Chromium acceptance also exercises an isolated fictional English plan: keyboard completion, required blocker notes, reload, export/import and final completion. It checks the English interaction branch, not real-user effectiveness or compatibility with every browser.
+
 There is no auto-execution, reminder, timer, account, cloud sync, analytics or medical efficacy claim.
 This is an interaction aid for anyone who prefers small steps, not an ADHD diagnosis or treatment.
 

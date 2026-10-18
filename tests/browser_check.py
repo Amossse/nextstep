@@ -145,6 +145,45 @@ def check():
         expect(restored.locator("#progress")).to_have_text("已完成 1 / 4")
         restored.reload()
         assert restored.locator("#progress").inner_text() == "已完成 1 / 4"
+        # Exercise the advertised English branch in an isolated browser context,
+        # including portable progress rather than only checking static labels.
+        english_plan = {
+            "title": "Fictional reading card", "goal": "Make one short study card.", "language": "en",
+            "steps": [
+                {"id": "read", "title": "Read one paragraph", "action": "Choose a public paragraph.",
+                 "done_when": "One paragraph selected.", "depends_on": []},
+                {"id": "card", "title": "Write one answer", "action": "Write an answer in your own words.",
+                 "done_when": "One short answer written.", "depends_on": ["read"]},
+            ],
+        }
+        english_file = root / "english.html"
+        english_file.write_text(app.render(english_plan), encoding="utf-8")
+        english_context = browser.new_context(accept_downloads=True)
+        english = english_context.new_page()
+        english.goto(english_file.as_uri())
+        english.get_by_role("button", name="Mark done", exact=True).focus()
+        english.keyboard.press("Enter")
+        assert english.locator("#progress").inner_text() == "Completed 1 / 2"
+        assert english.locator("#now").inner_text() == "Write one answer"
+        english.locator("#controls summary").click()
+        english.get_by_role("button", name="Record blocker", exact=True).click()
+        assert english.locator("#message").inner_text() == "Enter a blocker first."
+        english.get_by_label("What is blocking you?").fill("Fictional missing source")
+        english.get_by_role("button", name="Record blocker", exact=True).click()
+        english.reload()
+        assert english.locator("#now").inner_text() == "Resolve a blocker first · Write one answer"
+        with english.expect_download() as download:
+            english.get_by_role("button", name="Export progress", exact=True).click()
+        english_backup = root / "english-progress.json"
+        download.value.save_as(english_backup)
+        english.get_by_role("button", name="Unblock", exact=True).click()
+        english.once("dialog", lambda dialog: dialog.accept())
+        english.get_by_label("Import this plan's progress JSON").set_input_files(english_backup)
+        expect(english.locator("#now")).to_have_text("Resolve a blocker first · Write one answer")
+        english.get_by_role("button", name="Unblock", exact=True).click()
+        english.get_by_role("button", name="Mark done", exact=True).click()
+        assert english.locator("#now").inner_text() == "All steps marked done"
+        english_context.close()
         disabled = browser.new_context(java_script_enabled=False)
         plain = disabled.new_page()
         plain.goto((ROOT / "examples/study.html").as_uri())

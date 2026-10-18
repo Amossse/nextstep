@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Cover the previously untested English browser flow: keyboard completion, required blocker note, reload, portable export/import and final completion. Runtime behavior is unchanged; no user-effectiveness claim is made.
+
 - Supersede pending progress imports when a newer file is selected; a slow older read cannot overwrite the newer result or clear its messages/input. Cover the read-order race in Chromium and refresh the fictional HTML/CSP hash.
 
 - Decode imported progress as strict UTF-8; malformed bytes are rejected without silently replacing blocker text or changing existing progress. Update the fictional HTML and CSP hash, with a browser regression.
