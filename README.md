@@ -36,8 +36,10 @@ python scripts/nextstep.py install --to /physical/path/to/skills/nextstep
 ```
 
 It copies only the Skill, scripts, assets and format reference, not this README, tests or demo.
-Existing destinations are refused. Partial installation on an I/O failure may need manual review;
-the installer never removes existing files or changes global instructions. Invoke `$nextstep` or the
+Existing destinations are refused. Resources are copied into a temporary sibling before the final
+directory is published. A copy failure cleans staging and leaves no partial final installation; retry
+after resolving the I/O error. Parent directories may remain. This is not a filesystem-race sandbox.
+The installer never removes existing files or changes global instructions. Invoke `$nextstep` or the
 host's documented equivalent after refreshing Skill discovery. Local Python/file access is required;
 automatic discovery on every host and chat-only agents are not promised.
 

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Stage all installation resources before publishing the new Skill directory. A copy failure cleans its staging directory and leaves no partial final installation, so an unchanged retry can succeed; cover standalone rendering after retry.
+
 - Cover the previously untested English browser flow: keyboard completion, required blocker note, reload, portable export/import and final completion. Runtime behavior is unchanged; no user-effectiveness claim is made.
 
 - Supersede pending progress imports when a newer file is selected; a slow older read cannot overwrite the newer result or clear its messages/input. Cover the read-order race in Chromium and refresh the fictional HTML/CSP hash.

@@ -27,13 +27,15 @@ python scripts/nextstep.py render examples/study.json --out ../my-action-map.htm
 
 ## 安装 Skill
 
+安装资源先复制到同级暂存目录，全部成功后再发布最终目录。复制失败会清理暂存内容，不留下半套最终安装；解决读写错误后可重试，父目录可能保留。已有目标仍会被拒绝，不会自动删除用户文件；这不是防御恶意文件系统竞态的沙箱。
+
 选择宿主支持的 Skill 目录，指定一个尚不存在、名称为 `nextstep` 的文件夹：
 
 ```sh
 python scripts/nextstep.py install --to /physical/path/to/skills/nextstep
 ```
 
-安装器只复制 Skill、脚本、界面资源和格式说明，不修改全局指令。已有目录会拒绝覆盖；磁盘错误可能留下部分安装，需要人工检查。刷新宿主的 Skill 发现后，调用 `$nextstep` 或宿主支持的对应命令。需要本地 Python 和文件权限，不保证所有 Agent 自动发现。
+安装器只复制 Skill、脚本、界面资源和格式说明，不修改全局指令。刷新宿主的 Skill 发现后，调用 `$nextstep` 或宿主支持的对应命令。需要本地 Python 和文件权限，不保证所有 Agent 自动发现。
 
 可以对 Agent 说：
 

@@ -139,10 +139,18 @@ def main():
             destination = physical(args.to)
             if destination.name != "nextstep" or destination.exists():
                 raise ValueError("choose a new skill folder named nextstep")
-            destination.mkdir(parents=True, mode=0o700)
-            shutil.copy2(ROOT / "SKILL.md", destination / "SKILL.md")
-            for folder in ("assets", "scripts", "references"):
-                shutil.copytree(ROOT / folder, destination / folder, ignore=shutil.ignore_patterns("__pycache__"))
+            destination.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+            # Publish only after all bundled resources have copied successfully.
+            with tempfile.TemporaryDirectory(dir=destination.parent, prefix=".nextstep-install-") as temporary:
+                stage = Path(temporary) / "nextstep"
+                stage.mkdir(mode=0o700)
+                shutil.copy2(ROOT / "SKILL.md", stage / "SKILL.md")
+                for folder in ("assets", "scripts", "references"):
+                    shutil.copytree(ROOT / folder, stage / folder, ignore=shutil.ignore_patterns("__pycache__"))
+                destination = physical(destination)
+                if destination.exists():
+                    raise ValueError("installation destination already exists")
+                stage.rename(destination)
             print("Installed. Invoke nextstep in a host supporting local Python and Agent Skills.")
         else:
             plan = load(args.plan)
