@@ -89,6 +89,8 @@ The content fingerprint isolates plans, but browser localStorage is not a cross-
 
 ## Checks and contribution
 
+Chromium acceptance includes a fictional two-prerequisite join: one blocked branch does not unlock the join when the other finishes; resuming, undoing and reloading preserve dependency constraints and the independent completed branch. This expands branching-flow coverage without changing runtime behavior or measuring user effectiveness.
+
 ```sh
 python -m unittest discover -s tests -v
 # Optional development-only real browser check:

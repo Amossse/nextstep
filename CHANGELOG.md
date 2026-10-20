@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Cover a two-input action-map join in Chromium: blocking one independent prerequisite lets the other proceed but does not unlock the join; undo guards and reload preserve the remaining branch. Runtime behavior is unchanged.
+
 - Stage all installation resources before publishing the new Skill directory. A copy failure cleans its staging directory and leaves no partial final installation, so an unchanged retry can succeed; cover standalone rendering after retry.
 
 - Cover the previously untested English browser flow: keyboard completion, required blocker note, reload, portable export/import and final completion. Runtime behavior is unchanged; no user-effectiveness claim is made.

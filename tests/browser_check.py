@@ -184,6 +184,45 @@ def check():
         english.get_by_role("button", name="Mark done", exact=True).click()
         assert english.locator("#now").inner_text() == "All steps marked done"
         english_context.close()
+        # A blocked independent prerequisite must not unlock a two-input join.
+        fork_plan = {
+            "title": "Fictional two-source review", "goal": "Compare two supplied notes.", "language": "en",
+            "steps": [
+                {"id": "first", "title": "Read first note", "action": "Read supplied note A.",
+                 "done_when": "One observation from A.", "depends_on": []},
+                {"id": "second", "title": "Read second note", "action": "Read supplied note B.",
+                 "done_when": "One observation from B.", "depends_on": []},
+                {"id": "join", "title": "Compare the notes", "action": "Compare the two observations.",
+                 "done_when": "One comparison recorded.", "depends_on": ["first", "second"]},
+            ],
+        }
+        fork_file = root / "fork.html"
+        fork_file.write_text(app.render(fork_plan), encoding="utf-8")
+        fork_context = browser.new_context()
+        fork = fork_context.new_page()
+        fork.goto(fork_file.as_uri())
+        fork.locator("#controls summary").click()
+        fork.get_by_label("What is blocking you?").fill("Fictional missing first note")
+        fork.get_by_role("button", name="Record blocker", exact=True).click()
+        assert fork.locator("#now").inner_text() == "Read second note"
+        fork.get_by_role("button", name="Mark done", exact=True).click()
+        fork.reload()
+        expect(fork.locator("#steps li").nth(2).locator(".status")).to_have_text("Waiting for prerequisites")
+        assert fork.get_by_role("button", name="Mark done", exact=True).count() == 0
+        fork.get_by_role("button", name="Unblock", exact=True).click()
+        fork.get_by_role("button", name="Mark done", exact=True).click()
+        assert fork.locator("#now").inner_text() == "Compare the notes"
+        fork.get_by_role("button", name="Mark done", exact=True).click()
+        fork.locator("#map-label").click()
+        fork.locator("#steps li").nth(0).get_by_role("button", name="Undo completion").click()
+        assert fork.locator("#message").inner_text() == "Undo completed dependent steps first."
+        assert fork.locator("#progress").inner_text() == "Completed 3 / 3"
+        fork.locator("#steps li").nth(2).get_by_role("button", name="Undo completion").click()
+        fork.locator("#steps li").nth(0).get_by_role("button", name="Undo completion").click()
+        fork.reload()
+        assert fork.locator("#progress").inner_text() == "Completed 1 / 3"
+        expect(fork.locator("#steps li").nth(1).locator(".status")).to_have_text("Done")
+        fork_context.close()
         disabled = browser.new_context(java_script_enabled=False)
         plain = disabled.new_page()
         plain.goto((ROOT / "examples/study.html").as_uri())
