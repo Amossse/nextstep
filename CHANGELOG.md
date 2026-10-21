@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Cover a competing output created after staging but before atomic publication: refuse replacement, preserve the competing file and source plan, and clean the staging file. Runtime behavior is unchanged.
+
 - Cover a two-input action-map join in Chromium: blocking one independent prerequisite lets the other proceed but does not unlock the join; undo guards and reload preserve the remaining branch. Runtime behavior is unchanged.
 
 - Stage all installation resources before publishing the new Skill directory. A copy failure cleans its staging directory and leaves no partial final installation, so an unchanged retry can succeed; cover standalone rendering after retry.

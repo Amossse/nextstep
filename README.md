@@ -89,6 +89,8 @@ The content fingerprint isolates plans, but browser localStorage is not a cross-
 
 ## Checks and contribution
 
+A fault-injection regression creates a competing output after rendering is staged but before publication. The CLI refuses replacement, preserves the competing bytes and source plan, and cleans its staging file. This covers an important no-clobber timing boundary; runtime behavior is unchanged and hostile-process isolation is not claimed.
+
 Chromium acceptance includes a fictional two-prerequisite join: one blocked branch does not unlock the join when the other finishes; resuming, undoing and reloading preserve dependency constraints and the independent completed branch. This expands branching-flow coverage without changing runtime behavior or measuring user effectiveness.
 
 ```sh

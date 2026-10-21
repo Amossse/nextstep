@@ -18,6 +18,30 @@ PLAN = json.loads((ROOT / "examples/study.json").read_text(encoding="utf-8"))
 
 
 class NextStep(unittest.TestCase):
+    def test_competing_output_created_after_staging_is_preserved(self):
+        original_link = app.os.link
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            source = root / "plan.json"
+            source.write_text(json.dumps(PLAN), encoding="utf-8")
+            source_before = source.read_bytes()
+            output = root / "action.html"
+            sentinel = b"Fictional competing writer output"
+
+            def competing_link(staged, destination):
+                self.assertTrue(Path(staged).read_text(encoding="utf-8").startswith("<!doctype html>"))
+                Path(destination).write_bytes(sentinel)
+                original_link(staged, destination)
+
+            argv = ["nextstep", "render", str(source), "--out", str(output)]
+            with patch.object(sys, "argv", argv), patch.object(app.os, "link", competing_link), \
+                    patch("sys.stderr", io.StringIO()) as errors:
+                self.assertEqual(app.main(), 2)
+            self.assertNotIn(str(output), errors.getvalue())
+            self.assertEqual(output.read_bytes(), sentinel)
+            self.assertEqual(source.read_bytes(), source_before)
+            self.assertFalse(list(root.glob(".nextstep-*")))
+
     def test_copy_failure_does_not_publish_a_partial_install_and_retry_works(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()
