@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Decode plan files explicitly as UTF-8 with optional BOM, instead of JSON's automatic UTF-16/32 detection. Reject other encodings before rendering an output; cover non-ASCII plans and the preserved UTF-8/BOM paths.
+
 - Cover a competing output created after staging but before atomic publication: refuse replacement, preserve the competing file and source plan, and clean the staging file. Runtime behavior is unchanged.
 
 - Cover a two-input action-map join in Chromium: blocking one independent prerequisite lets the other proceed but does not unlock the join; undo guards and reload preserve the remaining branch. Runtime behavior is unchanged.

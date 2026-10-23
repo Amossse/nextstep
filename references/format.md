@@ -1,6 +1,6 @@
 # Plan format
 
-UTF-8 JSON, at most 128 KiB. Exactly these top-level fields:
+UTF-8 JSON, at most 128 KiB; an optional UTF-8 BOM is accepted. UTF-16/32 is rejected rather than auto-detected. Exactly these top-level fields:
 
 - `title`: plan name, non-empty text, at most 120 characters.
 - `goal`: desired outcome and relevant uncertainty, at most 1,000 characters.

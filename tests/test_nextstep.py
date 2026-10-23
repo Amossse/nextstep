@@ -18,6 +18,24 @@ PLAN = json.loads((ROOT / "examples/study.json").read_text(encoding="utf-8"))
 
 
 class NextStep(unittest.TestCase):
+    def test_plan_encoding_is_explicit_utf8_not_json_auto_detection(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            source = root / "plan.json"
+            raw = json.dumps(PLAN, ensure_ascii=False)
+            for encoding in ("utf-16", "utf-32"):
+                source.write_bytes(raw.encode(encoding))
+                output = root / f"{encoding}.html"
+                result = subprocess.run([sys.executable, str(ROOT / "scripts/nextstep.py"), "render",
+                                         str(source), "--out", str(output)], capture_output=True)
+                self.assertEqual(result.returncode, 2)
+                self.assertFalse(output.exists())
+                self.assertNotIn(b"Traceback", result.stderr)
+                self.assertNotIn(str(source).encode(), result.stderr)
+            for encoding in ("utf-8", "utf-8-sig"):
+                source.write_bytes(raw.encode(encoding))
+                self.assertEqual(app.load(source), app.validate(PLAN))
+
     def test_competing_output_created_after_staging_is_preserved(self):
         original_link = app.os.link
         with tempfile.TemporaryDirectory() as directory:

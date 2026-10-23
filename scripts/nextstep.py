@@ -87,7 +87,7 @@ def load(path):
         data = stream.read(128 * 1024 + 1)
     if len(data) > 128 * 1024:
         raise ValueError("plan exceeds 128 KiB")
-    return validate(json.loads(data, object_pairs_hook=unique_object))
+    return validate(json.loads(data.decode("utf-8-sig"), object_pairs_hook=unique_object))
 
 
 def render(plan):
