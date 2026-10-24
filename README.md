@@ -89,6 +89,8 @@ The content fingerprint isolates plans, but browser localStorage is not a cross-
 
 ## Checks and contribution
 
+If constructing the staged output stream fails, the helper closes the still-owned descriptor before cleaning its temporary file. A fault-injection regression covers this resource lifetime and absence of a published output; it is not a guarantee for every I/O failure or process crash.
+
 Plan files must be UTF-8 JSON (an optional UTF-8 BOM is accepted). UTF-16/32 auto-detection is no longer accepted; convert explicitly to UTF-8. Rejected encodings create no output. Browser progress imports retain their separate strict UTF-8 contract.
 
 A fault-injection regression creates a competing output after rendering is staged but before publication. The CLI refuses replacement, preserves the competing bytes and source plan, and cleans its staging file. This covers an important no-clobber timing boundary; runtime behavior is unchanged and hostile-process isolation is not claimed.

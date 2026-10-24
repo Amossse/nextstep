@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Close the staged output descriptor if stream construction fails before taking ownership, while retaining staging cleanup and atomic no-clobber publication. Add a descriptor-lifetime fault-injection regression.
+
 - Decode plan files explicitly as UTF-8 with optional BOM, instead of JSON's automatic UTF-16/32 detection. Reject other encodings before rendering an output; cover non-ASCII plans and the preserved UTF-8/BOM paths.
 
 - Cover a competing output created after staging but before atomic publication: refuse replacement, preserve the competing file and source plan, and clean the staging file. Runtime behavior is unchanged.

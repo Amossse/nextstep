@@ -113,7 +113,12 @@ def write_new(path, content):
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     fd, temporary = tempfile.mkstemp(dir=path.parent, prefix=".nextstep-")
     try:
-        with os.fdopen(fd, "w", encoding="utf-8") as stream:
+        try:
+            stream = os.fdopen(fd, "w", encoding="utf-8")
+        except BaseException:
+            os.close(fd)  # Ownership transfers only after the stream is constructed.
+            raise
+        with stream:
             stream.write(content)
             stream.flush()
             os.fsync(stream.fileno())

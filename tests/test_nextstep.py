@@ -18,6 +18,34 @@ PLAN = json.loads((ROOT / "examples/study.json").read_text(encoding="utf-8"))
 
 
 class NextStep(unittest.TestCase):
+    def test_stream_setup_failure_closes_staged_descriptor(self):
+        original_mkstemp = app.tempfile.mkstemp
+        opened = []
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+
+            def record_open(*args, **kwargs):
+                descriptor, filename = original_mkstemp(*args, **kwargs)
+                opened.append(descriptor)
+                return descriptor, filename
+
+            try:
+                with patch.object(app.tempfile, "mkstemp", record_open), \
+                        patch.object(app.os, "fdopen", side_effect=OSError("fictional stream setup failure")):
+                    with self.assertRaises(OSError):
+                        app.write_new(root / "action.html", "Fictional map")
+                self.assertEqual(len(opened), 1)
+                with self.assertRaises(OSError):
+                    app.os.fstat(opened[0])
+                self.assertFalse((root / "action.html").exists())
+                self.assertFalse(list(root.glob(".nextstep-*")))
+            finally:
+                for descriptor in opened:
+                    try:
+                        app.os.close(descriptor)
+                    except OSError:
+                        pass
+
     def test_plan_encoding_is_explicit_utf8_not_json_auto_detection(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()
