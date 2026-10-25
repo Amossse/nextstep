@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Require plan inputs to be regular files, checking the opened descriptor before reading. Nonblocking open rejects POSIX FIFOs without waiting for a writer; preserve UTF-8/BOM and byte limits. Cover real FIFOs on POSIX and descriptor checks on all CI platforms.
+
 - Close the staged output descriptor if stream construction fails before taking ownership, while retaining staging cleanup and atomic no-clobber publication. Add a descriptor-lifetime fault-injection regression.
 
 - Decode plan files explicitly as UTF-8 with optional BOM, instead of JSON's automatic UTF-16/32 detection. Reject other encodings before rendering an output; cover non-ASCII plans and the preserved UTF-8/BOM paths.

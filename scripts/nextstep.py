@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import stat
 import sys
 import tempfile
 
@@ -83,8 +84,16 @@ def unique_object(pairs):
 
 def load(path):
     path = physical(path)
-    with path.open("rb") as stream:
-        data = stream.read(128 * 1024 + 1)
+    # Nonblocking open lets us reject a FIFO without waiting for a writer.
+    flags = os.O_RDONLY | getattr(os, "O_NONBLOCK", 0) | getattr(os, "O_BINARY", 0)
+    descriptor = os.open(path, flags)
+    try:
+        if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+            raise ValueError("plan must be a regular file")
+        with os.fdopen(descriptor, "rb", closefd=False) as stream:
+            data = stream.read(128 * 1024 + 1)
+    finally:
+        os.close(descriptor)
     if len(data) > 128 * 1024:
         raise ValueError("plan exceeds 128 KiB")
     return validate(json.loads(data.decode("utf-8-sig"), object_pairs_hook=unique_object))

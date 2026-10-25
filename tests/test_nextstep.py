@@ -3,12 +3,15 @@ import copy
 import importlib.util
 import io
 import json
+import os
+import stat
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
 from unittest.mock import patch
+from types import SimpleNamespace
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location("nextstep", ROOT / "scripts/nextstep.py")
@@ -18,6 +21,28 @@ PLAN = json.loads((ROOT / "examples/study.json").read_text(encoding="utf-8"))
 
 
 class NextStep(unittest.TestCase):
+    def test_plan_input_requires_a_regular_opened_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory).resolve() / "plan.json"
+            source.write_text(json.dumps(PLAN), encoding="utf-8")
+            with patch.object(app.os, "fstat", return_value=SimpleNamespace(st_mode=stat.S_IFIFO)):
+                with self.assertRaises(ValueError):
+                    app.load(source)
+            self.assertEqual(app.load(source), app.validate(PLAN))
+
+    @unittest.skipUnless(hasattr(os, "mkfifo"), "POSIX FIFO check")
+    def test_fifo_input_does_not_wait_for_a_writer(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            source, output = root / "plan.pipe", root / "action.html"
+            os.mkfifo(source)
+            result = subprocess.run([sys.executable, str(ROOT / "scripts/nextstep.py"), "render",
+                                     str(source), "--out", str(output)], capture_output=True, timeout=3)
+            self.assertEqual(result.returncode, 2)
+            self.assertFalse(output.exists())
+            self.assertNotIn(b"Traceback", result.stderr)
+            self.assertNotIn(str(source).encode(), result.stderr)
+
     def test_stream_setup_failure_closes_staged_descriptor(self):
         original_mkstemp = app.tempfile.mkstemp
         opened = []
