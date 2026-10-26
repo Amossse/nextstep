@@ -95,6 +95,8 @@ Plan files must be UTF-8 JSON (an optional UTF-8 BOM is accepted). UTF-16/32 aut
 
 Plan input must be a regular file. POSIX FIFOs are opened nonblocking and refused without waiting for a writer or creating output; save a complete UTF-8 JSON file first. Windows runs the descriptor-type regression but skips the POSIX FIFO case. This is not an operating-system sandbox.
 
+Read-side fault injection also checks descriptor closure after a rejected file type or stream-construction failure, then verifies a normal plan can still be read. This fills an error-path coverage gap without changing runtime behavior; it does not cover every filesystem failure.
+
 A fault-injection regression creates a competing output after rendering is staged but before publication. The CLI refuses replacement, preserves the competing bytes and source plan, and cleans its staging file. This covers an important no-clobber timing boundary; runtime behavior is unchanged and hostile-process isolation is not claimed.
 
 Chromium acceptance includes a fictional two-prerequisite join: one blocked branch does not unlock the join when the other finishes; resuming, undoing and reloading preserve dependency constraints and the independent completed branch. This expands branching-flow coverage without changing runtime behavior or measuring user effectiveness.

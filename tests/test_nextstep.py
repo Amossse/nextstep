@@ -21,6 +21,37 @@ PLAN = json.loads((ROOT / "examples/study.json").read_text(encoding="utf-8"))
 
 
 class NextStep(unittest.TestCase):
+    def test_rejected_plan_and_read_stream_failure_close_the_descriptor(self):
+        original_open = app.os.open
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory).resolve() / "plan.json"
+            source.write_text(json.dumps(PLAN), encoding="utf-8")
+            for failure in ("type", "stream"):
+                opened = []
+
+                def record_open(*args, **kwargs):
+                    descriptor = original_open(*args, **kwargs)
+                    opened.append(descriptor)
+                    return descriptor
+
+                injection = (patch.object(app.os, "fstat", return_value=SimpleNamespace(st_mode=stat.S_IFIFO))
+                             if failure == "type" else
+                             patch.object(app.os, "fdopen", side_effect=OSError("Fictional read stream failure")))
+                try:
+                    with patch.object(app.os, "open", record_open), injection:
+                        with self.assertRaises((OSError, ValueError)):
+                            app.load(source)
+                    self.assertEqual(len(opened), 1)
+                    with self.assertRaises(OSError):
+                        app.os.fstat(opened[0])
+                finally:
+                    for descriptor in opened:
+                        try:
+                            app.os.close(descriptor)
+                        except OSError:
+                            pass
+            self.assertEqual(app.load(source), app.validate(PLAN))
+
     def test_plan_input_requires_a_regular_opened_file(self):
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory).resolve() / "plan.json"

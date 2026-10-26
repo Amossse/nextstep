@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add descriptor-lifetime fault-injection coverage for rejected plan file types and read-stream construction failures. Assert the actual opened descriptor is closed and a later normal read succeeds; runtime behavior is unchanged.
+
 - Require plan inputs to be regular files, checking the opened descriptor before reading. Nonblocking open rejects POSIX FIFOs without waiting for a writer; preserve UTF-8/BOM and byte limits. Cover real FIFOs on POSIX and descriptor checks on all CI platforms.
 
 - Close the staged output descriptor if stream construction fails before taking ownership, while retaining staging cleanup and atomic no-clobber publication. Add a descriptor-lifetime fault-injection regression.
