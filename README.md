@@ -89,6 +89,8 @@ The content fingerprint isolates plans, but browser localStorage is not a cross-
 
 ## Checks and contribution
 
+The file-budget regression accepts a complete 128 KiB UTF-8 plan with multibyte text and whitespace padding, then rejects one extra byte through both validate and render without creating output or changing the source. It checks bytes rather than character counts; runtime behavior is unchanged.
+
 If constructing the staged output stream fails, the helper closes the still-owned descriptor before cleaning its temporary file. A fault-injection regression covers this resource lifetime and absence of a published output; it is not a guarantee for every I/O failure or process crash.
 
 Plan files must be UTF-8 JSON (an optional UTF-8 BOM is accepted). UTF-16/32 auto-detection is no longer accepted; convert explicitly to UTF-8. Rejected encodings create no output. Browser progress imports retain their separate strict UTF-8 contract.

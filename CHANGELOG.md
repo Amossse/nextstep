@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Cover the exact 128 KiB plan-file boundary with UTF-8 multibyte content and valid JSON whitespace padding, then reject one extra byte through validate/render without output or source changes. This fills byte-budget regression coverage; runtime behavior is unchanged.
+
 - Add descriptor-lifetime fault-injection coverage for rejected plan file types and read-stream construction failures. Assert the actual opened descriptor is closed and a later normal read succeeds; runtime behavior is unchanged.
 
 - Require plan inputs to be regular files, checking the opened descriptor before reading. Nonblocking open rejects POSIX FIFOs without waiting for a writer; preserve UTF-8/BOM and byte limits. Cover real FIFOs on POSIX and descriptor checks on all CI platforms.

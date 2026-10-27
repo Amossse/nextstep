@@ -21,6 +21,29 @@ PLAN = json.loads((ROOT / "examples/study.json").read_text(encoding="utf-8"))
 
 
 class NextStep(unittest.TestCase):
+    def test_plan_byte_limit_accepts_the_boundary_and_refuses_one_more_byte(self):
+        raw = json.dumps(PLAN, ensure_ascii=False).encode("utf-8")
+        limit = 128 * 1024
+        self.assertLess(len(raw), limit)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            source = root / "fictional.json"
+            boundary = raw + b" " * (limit - len(raw))
+            source.write_bytes(boundary)
+            self.assertEqual(app.load(source), app.validate(PLAN))
+            oversized = boundary + b" "
+            source.write_bytes(oversized)
+            for action in ("validate", "render"):
+                output = root / "action.html"
+                command = [sys.executable, str(ROOT / "scripts/nextstep.py"), action, str(source)]
+                result = subprocess.run(command + (["--out", str(output)] if action == "render" else []),
+                                        capture_output=True)
+                self.assertEqual(result.returncode, 2)
+                self.assertFalse(output.exists())
+                self.assertEqual(source.read_bytes(), oversized)
+                self.assertNotIn(str(source).encode(), result.stderr)
+                self.assertNotIn(b"Traceback", result.stderr)
+
     def test_rejected_plan_and_read_stream_failure_close_the_descriptor(self):
         original_open = app.os.open
         with tempfile.TemporaryDirectory() as directory:
