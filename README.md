@@ -1,5 +1,7 @@
 # NextStep
 
+Output publication has a fault-injection regression for `fsync` failure: no output is linked, staging is removed, and a normal retry succeeds. Runtime behavior is unchanged; this does not simulate every storage or process failure.
+
 **One next action. The whole path when you need it.**
 
 A portable Agent Skill plus an original offline action-map renderer. Turn an approved task into

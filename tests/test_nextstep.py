@@ -21,6 +21,20 @@ PLAN = json.loads((ROOT / "examples/study.json").read_text(encoding="utf-8"))
 
 
 class NextStep(unittest.TestCase):
+    def test_sync_failure_does_not_publish_output_and_cleans_staging(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            target = root / "fictional.html"
+            with patch.object(app.os, "fsync", side_effect=OSError("Fictional sync failure")), \
+                    patch.object(app.os, "link") as publish:
+                with self.assertRaises(OSError):
+                    app.write_new(target, "Fictional map")
+                publish.assert_not_called()
+            self.assertFalse(target.exists())
+            self.assertEqual(list(root.glob(".nextstep-*")), [])
+            app.write_new(target, "Fictional retry")
+            self.assertEqual(target.read_text(encoding="utf-8"), "Fictional retry")
+
     def test_plan_byte_limit_accepts_the_boundary_and_refuses_one_more_byte(self):
         raw = json.dumps(PLAN, ensure_ascii=False).encode("utf-8")
         limit = 128 * 1024
