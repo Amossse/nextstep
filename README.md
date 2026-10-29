@@ -91,6 +91,8 @@ The content fingerprint isolates plans, but browser localStorage is not a cross-
 
 ## Checks and contribution
 
+A read-I/O fault-injection regression exercises the render CLI after opening a valid plan. It verifies stream/descriptor closure, unchanged source bytes, no output/staging and a non-echoing error, followed by a normal read. Runtime behavior is unchanged; not every filesystem failure is simulated.
+
 The file-budget regression accepts a complete 128 KiB UTF-8 plan with multibyte text and whitespace padding, then rejects one extra byte through both validate and render without creating output or changing the source. It checks bytes rather than character counts; runtime behavior is unchanged.
 
 If constructing the staged output stream fails, the helper closes the still-owned descriptor before cleaning its temporary file. A fault-injection regression covers this resource lifetime and absence of a published output; it is not a guarantee for every I/O failure or process crash.

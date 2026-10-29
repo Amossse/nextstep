@@ -4,7 +4,9 @@ import importlib.util
 import io
 import json
 import os
+import runpy
 import stat
+from contextlib import contextmanager
 from pathlib import Path
 import subprocess
 import sys
@@ -21,6 +23,42 @@ PLAN = json.loads((ROOT / "examples/study.json").read_text(encoding="utf-8"))
 
 
 class NextStep(unittest.TestCase):
+    def test_read_io_failure_closes_resources_without_publishing_output(self):
+        original_fdopen, opened, streams = os.fdopen, [], []
+
+        class FailingRead:
+            def read(self, size):
+                raise OSError("Fictional read failure")
+
+        @contextmanager
+        def fail_read(descriptor, *args, **kwargs):
+            opened.append(descriptor)
+            with original_fdopen(descriptor, *args, **kwargs) as stream:
+                streams.append(stream)
+                yield FailingRead()
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            source, output = root / "fictional.json", root / "action.html"
+            source.write_text(json.dumps(PLAN), encoding="utf-8")
+            before, errors = source.read_bytes(), io.StringIO()
+            args = [str(ROOT / "scripts/nextstep.py"), "render", str(source), "--out", str(output)]
+            with patch.object(os, "fdopen", side_effect=fail_read), patch.object(sys, "argv", args), \
+                    patch.object(sys, "stderr", errors), patch.object(sys, "stdout", io.StringIO()):
+                with self.assertRaises(SystemExit) as exited:
+                    runpy.run_path(args[0], run_name="__main__")
+            self.assertEqual(exited.exception.code, 2)
+            self.assertEqual(len(opened), 1)
+            self.assertTrue(streams[0].closed)
+            with self.assertRaises(OSError):
+                os.fstat(opened[0])
+            self.assertEqual(source.read_bytes(), before)
+            self.assertFalse(output.exists())
+            self.assertEqual(list(root.glob(".nextstep-*")), [])
+            for detail in (str(source), "Fictional", "Traceback"):
+                self.assertNotIn(detail, errors.getvalue())
+            self.assertEqual(app.load(source), app.validate(PLAN))
+
     def test_sync_failure_does_not_publish_output_and_cleans_staging(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Cover a read-I/O failure through the render CLI: close the opened stream/descriptor, preserve source bytes, publish no output and omit raw exception/path details. Runtime behavior is unchanged.
+
 - Cover failed output synchronization before publication: no link is attempted, staging is removed and a later retry succeeds. Runtime behavior is unchanged.
 
 - Cover the exact 128 KiB plan-file boundary with UTF-8 multibyte content and valid JSON whitespace padding, then reject one extra byte through validate/render without output or source changes. This fills byte-budget regression coverage; runtime behavior is unchanged.
