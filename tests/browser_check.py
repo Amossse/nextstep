@@ -100,6 +100,25 @@ def check():
         page.locator("#import").set_input_files(recovered)
         expect(page.locator("#storage")).to_contain_text("进度已保存在当前浏览器")
         assert json.loads(page.evaluate("key => localStorage.getItem(key)", state_key))["steps"][0]["status"] == "done"
+        denied = browser.new_context(accept_downloads=True)
+        denied.add_init_script("""window.fictionalStorageWrites = 0;
+          Storage.prototype.getItem = function() { throw new DOMException('Fictional denial', 'SecurityError'); };
+          Storage.prototype.setItem = function() { window.fictionalStorageWrites++; };
+        """)
+        unreadable = denied.new_page()
+        unreadable.on("pageerror", lambda error: errors.append(str(error)))
+        unreadable.on("request", lambda request: requests.append(request.url))
+        unreadable.goto((ROOT / "examples/study.html").as_uri())
+        expect(unreadable.locator("#storage")).to_contain_text("关闭页面前请导出")
+        unreadable.get_by_role("button", name="标记完成", exact=True).click()
+        expect(unreadable.locator("#progress")).to_have_text("已完成 1 / 4")
+        assert unreadable.evaluate("window.fictionalStorageWrites") == 0
+        with unreadable.expect_download() as download:
+            unreadable.get_by_role("button", name="导出进度").click()
+        backup = root / "storage-read-denied.json"
+        download.value.save_as(backup)
+        assert json.loads(backup.read_text(encoding="utf-8"))["steps"][0]["status"] == "done"
+        denied.close()
         offline = browser.new_context()
         offline.add_init_script("Storage.prototype.setItem = function() { throw Error('unavailable'); };")
         fallback = offline.new_page()

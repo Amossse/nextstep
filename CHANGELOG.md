@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Cover denied browser storage reads separately from write failures: avoid storage-write attempts, retain in-memory actions and export a valid completion backup. Runtime behavior is unchanged.
+
 - Cover a read-I/O failure through the render CLI: close the opened stream/descriptor, preserve source bytes, publish no output and omit raw exception/path details. Runtime behavior is unchanged.
 
 - Cover failed output synchronization before publication: no link is attempted, staging is removed and a later retry succeeds. Runtime behavior is unchanged.
