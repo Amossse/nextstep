@@ -91,6 +91,8 @@ The content fingerprint isolates plans, but browser localStorage is not a cross-
 
 ## Checks and contribution
 
+The browser regression also injects a rejected progress-file read: no replacement confirmation appears, stored/in-memory progress is preserved, the input resets, and a later valid import succeeds. Runtime behavior is unchanged; this does not simulate every browser or storage failure.
+
 Chromium coverage now includes `localStorage.getItem` throwing `SecurityError`: no storage-write attempt occurs, in-memory progress still changes and an exported backup retains the completion. Runtime behavior is unchanged; this does not establish cross-browser storage reliability.
 
 A read-I/O fault-injection regression exercises the render CLI after opening a valid plan. It verifies stream/descriptor closure, unchanged source bytes, no output/staging and a non-echoing error, followed by a normal read. Runtime behavior is unchanged; not every filesystem failure is simulated.

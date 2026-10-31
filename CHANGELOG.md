@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Cover rejected progress-file reads before confirmation: preserve storage/progress, reset the file input, and allow a later valid import. Runtime behavior is unchanged.
+
 - Cover denied browser storage reads separately from write failures: avoid storage-write attempts, retain in-memory actions and export a valid completion backup. Runtime behavior is unchanged.
 
 - Cover a read-I/O failure through the render CLI: close the opened stream/descriptor, preserve source bytes, publish no output and omit raw exception/path details. Runtime behavior is unchanged.

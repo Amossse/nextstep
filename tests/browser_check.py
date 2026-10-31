@@ -164,6 +164,29 @@ def check():
         expect(restored.locator("#progress")).to_have_text("已完成 1 / 4")
         restored.reload()
         assert restored.locator("#progress").inner_text() == "已完成 1 / 4"
+        # A failed file read must preserve progress and allow a later valid import.
+        unreadable = root / "unreadable.json"
+        unreadable.write_text(json.dumps(slow_state), encoding="utf-8")
+        previous = restored.evaluate("JSON.stringify(localStorage)")
+        dialogs = []
+        restored.on("dialog", lambda dialog: dialogs.append(dialog.type))
+        restored.evaluate("""() => {
+          const read = File.prototype.arrayBuffer;
+          File.prototype.arrayBuffer = function() {
+            if (this.name === 'unreadable.json') return Promise.reject(Error('Fictional read failure'));
+            return read.call(this);
+          };
+        }""")
+        restored.locator("#import").set_input_files(unreadable)
+        expect(restored.locator("#import")).to_have_value("")
+        expect(restored.locator("#message")).not_to_have_text("")
+        expect(restored.locator("#progress")).to_have_text("已完成 1 / 4")
+        assert restored.evaluate("JSON.stringify(localStorage)") == previous
+        assert dialogs == []
+        restored.locator("#import").set_input_files(portable)
+        expect(restored.locator("#import")).to_have_value("")
+        expect(restored.locator("#message")).to_have_text("")
+        assert dialogs == ["confirm"]
         # Exercise the advertised English branch in an isolated browser context,
         # including portable progress rather than only checking static labels.
         english_plan = {
