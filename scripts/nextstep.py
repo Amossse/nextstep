@@ -19,7 +19,7 @@ VERSION = "0.1.0"
 def text(value, limit):
     if not isinstance(value, str) or not value.strip() or len(value) > limit:
         raise ValueError("missing or oversized text")
-    if any(ord(c) < 32 and c not in "\n\t" for c in value):
+    if any((ord(c) < 32 or 127 <= ord(c) <= 159) and c not in "\n\t" for c in value):
         raise ValueError("control characters are not allowed")
     value.encode("utf-8")
     return value.strip()

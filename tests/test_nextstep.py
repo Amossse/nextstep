@@ -23,6 +23,30 @@ PLAN = json.loads((ROOT / "examples/study.json").read_text(encoding="utf-8"))
 
 
 class NextStep(unittest.TestCase):
+    def test_control_characters_are_rejected_before_rendering(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            source, output = root / "fictional.json", root / "action.html"
+            for field, control in (("title", "\x7f"), ("goal", "\x85"), ("step-title", "\x9b"),
+                                   ("action", "\x7f"), ("done_when", "\x7f")):
+                plan = copy.deepcopy(PLAN)
+                target = plan["steps"][0] if field in ("step-title", "action", "done_when") else plan
+                target["title" if field == "step-title" else field] = f"Fictional{control}text"
+                source.write_text(json.dumps(plan), encoding="utf-8")
+                before = source.read_bytes()
+                for action in ("validate", "render"):
+                    command = [sys.executable, str(ROOT / "scripts/nextstep.py"), action, str(source)]
+                    result = subprocess.run(command + (["--out", str(output)] if action == "render" else []),
+                                            capture_output=True)
+                    self.assertEqual(result.returncode, 2)
+                    self.assertNotIn(b"Fictional", result.stderr)
+                    self.assertNotIn(b"Traceback", result.stderr)
+                    self.assertEqual(source.read_bytes(), before)
+                    self.assertFalse(output.exists())
+            allowed = copy.deepcopy(PLAN)
+            allowed["goal"] = "Fictional\nUnicode 样例\ttext"
+            self.assertEqual(app.validate(allowed)["goal"], allowed["goal"])
+
     def test_read_io_failure_closes_resources_without_publishing_output(self):
         original_fdopen, opened, streams = os.fdopen, [], []
 

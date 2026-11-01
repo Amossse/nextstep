@@ -75,6 +75,8 @@ This is an interaction aid for anyone who prefers small steps, not an ADHD diagn
 
 ## Architecture, safety and limits
 
+Plan text rejects C0/C1 controls, including DEL, except newline and tab. CLI regressions cover all plan text fields through validation/rendering, unchanged sources and absent outputs; ordinary Unicode, newline and tab remain accepted. Browser progress handling is unchanged.
+
 `User-approved source → host Agent → bounded JSON → Python validation → standalone HTML/SVG → user progress`.
 The initial focus is one step; the complete path remains available. Up to 12 steps and 3 dependencies per
 step keep the graph small. Larger tasks must be split deliberately rather than silently truncated.

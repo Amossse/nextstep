@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reject DEL and C1 controls in plan text, completing the documented control-character boundary while retaining newline/tab/Unicode. Cover validation/render refusal for each text field without output or source mutation.
+
 - Cover rejected progress-file reads before confirmation: preserve storage/progress, reset the file input, and allow a later valid import. Runtime behavior is unchanged.
 
 - Cover denied browser storage reads separately from write failures: avoid storage-write attempts, retain in-memory actions and export a valid completion backup. Runtime behavior is unchanged.
