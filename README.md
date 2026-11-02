@@ -75,6 +75,8 @@ This is an interaction aid for anyone who prefers small steps, not an ADHD diagn
 
 ## Architecture, safety and limits
 
+Publication-error regressions cover a failed hard-link operation: discard staging, preserve an existing target and source bytes, avoid echoing paths or content, and allow a later retry. Runtime behavior is unchanged; this is fault injection, not a guarantee that every filesystem supports hard links.
+
 Plan text rejects C0/C1 controls, including DEL, except newline and tab. CLI regressions cover all plan text fields through validation/rendering, unchanged sources and absent outputs; ordinary Unicode, newline and tab remain accepted. Browser progress handling is unchanged.
 
 `User-approved source → host Agent → bounded JSON → Python validation → standalone HTML/SVG → user progress`.

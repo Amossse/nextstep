@@ -23,6 +23,32 @@ PLAN = json.loads((ROOT / "examples/study.json").read_text(encoding="utf-8"))
 
 
 class NextStep(unittest.TestCase):
+    def test_link_publication_failure_preserves_target_and_allows_retry(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            source, target = root / "fictional.json", root / "action.html"
+            source.write_text(json.dumps(PLAN), encoding="utf-8")
+            original = source.read_bytes()
+            for existing in (False, True):
+                if existing:
+                    target.write_text("Fictional original", encoding="utf-8")
+                errors = io.StringIO()
+                with patch.object(app.os, "link", side_effect=OSError("Fictional publication failure")), \
+                        patch.object(sys, "argv", ["nextstep", "render", str(source), "--out", str(target)]), \
+                        patch.object(sys, "stderr", errors):
+                    self.assertEqual(app.main(), 2)
+                self.assertEqual(source.read_bytes(), original)
+                self.assertEqual(list(root.glob(".nextstep-*")), [])
+                if existing:
+                    self.assertEqual(target.read_text(encoding="utf-8"), "Fictional original")
+                    target.unlink()
+                else:
+                    self.assertFalse(target.exists())
+                for detail in (str(root), "Fictional", "Traceback"):
+                    self.assertNotIn(detail, errors.getvalue())
+            app.write_new(target, app.render(PLAN))
+            self.assertIn("<!doctype html>", target.read_text(encoding="utf-8").lower())
+
     def test_control_characters_are_rejected_before_rendering(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()

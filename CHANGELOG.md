@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Cover hard-link publication failure through the CLI: clean staging, preserve existing output and source bytes, suppress sensitive diagnostics and permit retry. Runtime behavior is unchanged.
+
 - Reject DEL and C1 controls in plan text, completing the documented control-character boundary while retaining newline/tab/Unicode. Cover validation/render refusal for each text field without output or source mutation.
 
 - Cover rejected progress-file reads before confirmation: preserve storage/progress, reset the file input, and allow a later valid import. Runtime behavior is unchanged.
