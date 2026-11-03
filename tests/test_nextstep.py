@@ -23,6 +23,33 @@ PLAN = json.loads((ROOT / "examples/study.json").read_text(encoding="utf-8"))
 
 
 class NextStep(unittest.TestCase):
+    def test_installed_resource_failures_leave_inputs_and_outputs_untouched(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            target = root / "nextstep"
+            subprocess.run([sys.executable, str(ROOT / "scripts/nextstep.py"), "install", "--to", str(target)],
+                           capture_output=True, check=True)
+            source, output = root / "fictional.json", root / "output/action.html"
+            source.write_text(json.dumps(PLAN), encoding="utf-8")
+            before = source.read_bytes()
+            command = [sys.executable, str(target / "scripts/nextstep.py"), "render", str(source),
+                       "--out", str(output)]
+            for name in ("app.js", "style.css", "page.html"):
+                resource = target / "assets" / name
+                data = resource.read_bytes()
+                resource.unlink()
+                try:
+                    result = subprocess.run(command, capture_output=True)
+                    self.assertEqual(result.returncode, 2)
+                    self.assertEqual(source.read_bytes(), before)
+                    self.assertFalse(output.parent.exists())
+                    for detail in (str(root).encode(), b"Traceback", b"Fictional"):
+                        self.assertNotIn(detail, result.stderr)
+                finally:
+                    resource.write_bytes(data)
+            subprocess.run(command, capture_output=True, check=True)
+            self.assertIn("Content-Security-Policy", output.read_text(encoding="utf-8"))
+
     def test_link_publication_failure_preserves_target_and_allows_retry(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()
