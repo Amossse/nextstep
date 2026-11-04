@@ -23,6 +23,27 @@ PLAN = json.loads((ROOT / "examples/study.json").read_text(encoding="utf-8"))
 
 
 class NextStep(unittest.TestCase):
+    def test_unknown_template_marker_is_reported_without_output(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            target = root / "nextstep"
+            subprocess.run([sys.executable, str(ROOT / "scripts/nextstep.py"), "install",
+                            "--to", str(target)], capture_output=True, check=True)
+            template = target / "assets/page.html"
+            original = template.read_bytes()
+            template.write_bytes(original + b"@@FICTIONAL@@")
+            output = root / "output/action.html"
+            command = [sys.executable, str(target / "scripts/nextstep.py"), "render",
+                       str(ROOT / "examples/study.json"), "--out", str(output)]
+            result = subprocess.run(command, capture_output=True)
+            self.assertEqual(result.returncode, 2)
+            self.assertNotIn(b"Traceback", result.stderr)
+            self.assertNotIn(b"FICTIONAL", result.stderr)
+            self.assertFalse(output.parent.exists())
+            template.write_bytes(original)
+            subprocess.run(command, capture_output=True, check=True)
+            self.assertTrue(output.is_file())
+
     def test_installed_resource_failures_leave_inputs_and_outputs_untouched(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Rendering rejects unknown markers in an installed HTML template with a controlled error before creating output.
+
 - Cover missing resources in an installed copy: fail safely for JavaScript/CSS/template loss, retain source bytes, create no output directory and allow retry after restoration. Runtime behavior is unchanged.
 
 - Cover hard-link publication failure through the CLI: clean staging, preserve existing output and source bytes, suppress sensitive diagnostics and permit retry. Runtime behavior is unchanged.

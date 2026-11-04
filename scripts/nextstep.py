@@ -114,7 +114,10 @@ def render(plan):
     values = {"LANG": plan["language"], "TITLE": html.escape(plan["title"]), "CSS": css,
               "JS": js, "HASH": digest, "PLAN": payload, "ID": identifier, "FALLBACK": fallback}
     # One-pass replacement: user text containing a template token stays literal.
-    return re.sub(r"@@([A-Z]+)@@", lambda m: values[m[1]], template)
+    try:
+        return re.sub(r"@@([A-Z]+)@@", lambda m: values[m[1]], template)
+    except KeyError:
+        raise ValueError("unknown template marker") from None
 
 
 def write_new(path, content):

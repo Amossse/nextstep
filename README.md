@@ -75,6 +75,9 @@ This is an interaction aid for anyone who prefers small steps, not an ADHD diagn
 
 ## Architecture, safety and limits
 
+
+Rendering rejects unknown markers in an installed HTML template with a controlled error before creating output.
+
 Installed-copy regressions cover missing JavaScript, CSS and HTML template resources. Rendering fails without exposing paths/content, changing the plan or creating output directories; restoring the bundled resource permits retry. Runtime behavior is unchanged; this checks packaging failure recovery rather than host discovery or model invocation.
 
 Publication-error regressions cover a failed hard-link operation: discard staging, preserve an existing target and source bytes, avoid echoing paths or content, and allow a later retry. Runtime behavior is unchanged; this is fault injection, not a guarantee that every filesystem supports hard links.
