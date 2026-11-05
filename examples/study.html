@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-twKbfADebrDw1IRDfVSpKMN0pGToLvhMwgxV0b4ay2E='; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; connect-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-5vOcCiLUxlOd/En/vmQahfh9l0ROXtRFdMasu9wgjnU='; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; connect-src 'none'">
 <title>做一张能用的学习卡片 · NextStep</title>
 <style>:root{color-scheme:light;--paper:#f7f8f3;--ink:#192e29;--line:#bcc9c0;--focus:#e8f28c}
 *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.6 system-ui,sans-serif}
@@ -77,7 +77,7 @@ function checked(value) {
 }
 let storageAvailable = true;
 let rejectedStoredState = false;
-try { const raw = localStorage.getItem(key); if (raw) state = checked(JSON.parse(raw)); }
+try { const raw = localStorage.getItem(key); if (raw !== null) state = checked(JSON.parse(raw)); }
 catch (_) { storageAvailable = false; rejectedStoredState = true; $("message").textContent = copy.invalid; }
 const record = id => state.steps.find(s => s.id === id);
 const ready = s => s.depends_on.every(d => record(d).status === "done");

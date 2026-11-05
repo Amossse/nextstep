@@ -41,7 +41,7 @@ function checked(value) {
 }
 let storageAvailable = true;
 let rejectedStoredState = false;
-try { const raw = localStorage.getItem(key); if (raw) state = checked(JSON.parse(raw)); }
+try { const raw = localStorage.getItem(key); if (raw !== null) state = checked(JSON.parse(raw)); }
 catch (_) { storageAvailable = false; rejectedStoredState = true; $("message").textContent = copy.invalid; }
 const record = id => state.steps.find(s => s.id === id);
 const ready = s => s.depends_on.every(d => record(d).status === "done");

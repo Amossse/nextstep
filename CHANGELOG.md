@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- An empty stored value is treated as corrupt progress and preserved until a confirmed valid import.
+
 - Rendering rejects unknown markers in an installed HTML template with a controlled error before creating output.
 
 - Cover missing resources in an installed copy: fail safely for JavaScript/CSS/template loss, retain source bytes, create no output directory and allow retry after restoration. Runtime behavior is unchanged.

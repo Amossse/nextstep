@@ -80,6 +80,10 @@ def check():
         assert page.evaluate("window.evil === undefined")
         assert page.locator("#now").inner_text() == "选一小段材料"
         state_key = page.evaluate("'nextstep-v1-' + JSON.parse(document.getElementById('identity').textContent)")
+        page.evaluate("key => localStorage.setItem(key, '')", state_key)
+        page.reload()
+        assert page.evaluate("key => localStorage.getItem(key)", state_key) == ""
+        assert page.locator("#message").inner_text()
         page.evaluate("key => localStorage.setItem(key, 'fictional corrupt state')", state_key)
         page.reload()
         assert page.evaluate("key => localStorage.getItem(key)", state_key) == "fictional corrupt state"
