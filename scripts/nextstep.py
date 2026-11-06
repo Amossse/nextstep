@@ -113,6 +113,9 @@ def render(plan):
     template = (ROOT / "assets/page.html").read_text(encoding="utf-8")
     values = {"LANG": plan["language"], "TITLE": html.escape(plan["title"]), "CSS": css,
               "JS": js, "HASH": digest, "PLAN": payload, "ID": identifier, "FALLBACK": fallback}
+    markers = set(re.findall(r"@@([A-Z]+)@@", template))
+    if not set(values).issubset(markers):
+        raise ValueError("missing template marker")
     # One-pass replacement: user text containing a template token stays literal.
     try:
         return re.sub(r"@@([A-Z]+)@@", lambda m: values[m[1]], template)

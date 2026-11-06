@@ -77,6 +77,8 @@ This is an interaction aid for anyone who prefers small steps, not an ADHD diagn
 
 ## Architecture, safety and limits
 
+Rendering requires every bundled template marker before creating output. Missing plan data or script/CSP markers produce a controlled error and allow retry after resource repair.
+
 
 Rendering rejects unknown markers in an installed HTML template with a controlled error before creating output.
 

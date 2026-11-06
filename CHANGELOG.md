@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Rendering requires every bundled template marker before creating output. Missing plan data or script/CSP markers produce a controlled error and allow retry after resource repair.
+
 - An empty stored value is treated as corrupt progress and preserved until a confirmed valid import.
 
 - Rendering rejects unknown markers in an installed HTML template with a controlled error before creating output.

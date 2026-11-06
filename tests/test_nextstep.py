@@ -23,6 +23,28 @@ PLAN = json.loads((ROOT / "examples/study.json").read_text(encoding="utf-8"))
 
 
 class NextStep(unittest.TestCase):
+    def test_missing_required_template_markers_fail_before_publication(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            target = root / "nextstep"
+            subprocess.run([sys.executable, str(ROOT / "scripts/nextstep.py"), "install",
+                            "--to", str(target)], capture_output=True, check=True)
+            template = target / "assets/page.html"
+            original = template.read_bytes()
+            output = root / "output/action.html"
+            command = [sys.executable, str(target / "scripts/nextstep.py"), "render",
+                       str(ROOT / "examples/study.json"), "--out", str(output)]
+            for marker in (b"@@PLAN@@", b"@@HASH@@", b"@@JS@@"):
+                self.assertIn(marker, original)
+                template.write_bytes(original.replace(marker, b""))
+                rejected = subprocess.run(command, capture_output=True)
+                self.assertEqual(rejected.returncode, 2)
+                self.assertNotIn(b"Traceback", rejected.stderr)
+                self.assertFalse(output.parent.exists())
+            template.write_bytes(original)
+            subprocess.run(command, capture_output=True, check=True)
+            self.assertTrue(output.is_file())
+
     def test_unknown_template_marker_is_reported_without_output(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()
