@@ -6,6 +6,7 @@ const zh = plan.language === "zh";
 const copy = zh ? {
   privacy:"离线行动图 · 不联网", focus:"现在只看这一步", done:"标记完成", block:"记录阻塞",
   resume:"解除阻塞", reopen:"撤销完成", reason:"哪里卡住了？", reasonNeeded:"请先填写阻塞原因。",
+  reasonInvalid:"阻塞备注含无效字符，请修改后重试。",
   criterion:"完成标准：", all:"查看全图与步骤", export:"导出进度", import:"导入本计划的进度 JSON",
   pending:"可开始", waiting:"等待前置步骤", blocked:"受阻", completed:"已完成", dependency:"依赖：",
   complete:"全部步骤已标记完成", completeBody:"这是你的进度记录，不代表 Agent 已验证实际结果。",
@@ -16,6 +17,7 @@ const copy = zh ? {
 } : {
   privacy:"Offline action map · No network", focus:"One next action", done:"Mark done", block:"Record blocker",
   resume:"Unblock", reopen:"Undo completion", reason:"What is blocking you?", reasonNeeded:"Enter a blocker first.",
+  reasonInvalid:"Blocker note contains invalid characters. Edit it and retry.",
   criterion:"Done when: ", all:"Open map and steps", export:"Export progress", import:"Import this plan's progress JSON",
   pending:"Ready", waiting:"Waiting for prerequisites", blocked:"Blocked", completed:"Done", dependency:"Depends on: ",
   complete:"All steps marked done", completeBody:"Your progress record, not an Agent's verification of actual results.",
@@ -27,13 +29,15 @@ const copy = zh ? {
 const key = "nextstep-v1-" + planId;
 const fresh = () => ({version:1, plan_id:planId, steps:plan.steps.map(s => ({id:s.id, status:"pending", reason:""}))});
 let state = fresh();
+// With Unicode matching, valid surrogate pairs (for example emoji) remain allowed.
+const validNote = value => !/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f-\u009f\uD800-\uDFFF]/u.test(value);
 function checked(value) {
   if (!value || typeof value !== "object" || Array.isArray(value) ||
       Object.keys(value).sort().join() !== "plan_id,steps,version" || value.version !== 1 ||
       value.plan_id !== planId || !Array.isArray(value.steps) || value.steps.length !== plan.steps.length) throw Error("invalid");
   value.steps.forEach((s,i) => {
     if (!s || Object.keys(s).sort().join() !== "id,reason,status" || s.id !== plan.steps[i].id ||
-        !["pending","done","blocked"].includes(s.status) || typeof s.reason !== "string" || s.reason.length > 1000 ||
+        !["pending","done","blocked"].includes(s.status) || typeof s.reason !== "string" || s.reason.length > 1000 || !validNote(s.reason) ||
         (s.status === "blocked" && !s.reason.trim()) || (s.status !== "blocked" && s.reason !== "")) throw Error("invalid");
     if (s.status === "done" && plan.steps[i].depends_on.some(d => value.steps.find(x => x.id === d).status !== "done")) throw Error("dependency");
   });
@@ -81,6 +85,7 @@ function controls(step, parent) {
   const area = element("textarea","",details); area.maxLength=1000; area.id="reason-"+step.id; label.htmlFor=area.id;
   button(copy.block,()=>{
     const reason=area.value.trim(); if (!reason) { $("message").textContent=copy.reasonNeeded; area.focus(); return; }
+    if (!validNote(reason)) { $("message").textContent=copy.reasonInvalid; area.focus(); return; }
     change(step.id,"blocked",reason);
   },details,true);
 }

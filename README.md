@@ -10,6 +10,8 @@ you mark completion, record blockers and resume without rereading a wall of text
 
 [中文](README.zh-CN.md) · [Skill](SKILL.md) · [Security](SECURITY.md)
 
+Blocker notes reject disallowed control characters and unpaired Unicode surrogates during entry, progress import and saved-state loading. Rejected imports leave progress unchanged; ordinary Unicode, emoji, tabs and newlines remain valid.
+
 ## Try the fictional example
 
 Download or clone this repository, then open `examples/study.html` in a browser. No install, server,

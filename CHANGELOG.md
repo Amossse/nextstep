@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Blocker notes reject disallowed control characters and unpaired Unicode surrogates during entry, progress import and saved-state loading. Rejected imports leave progress unchanged; ordinary Unicode, emoji, tabs and newlines remain valid.
+
 - Rendering requires every bundled template marker before creating output. Missing plan data or script/CSP markers produce a controlled error and allow retry after resource repair.
 
 - An empty stored value is treated as corrupt progress and preserved until a confirmed valid import.

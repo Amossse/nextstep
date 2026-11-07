@@ -21,13 +21,15 @@ def check():
         requests, errors = [], []
         page.on("request", lambda request: requests.append(request.url))
         page.on("pageerror", lambda error: errors.append(str(error)))
-        page.goto((ROOT / "examples/study.html").as_uri())
+        rendered = root / "study.html"
+        rendered.write_text(app.render(json.loads((ROOT / "examples/study.json").read_text(encoding="utf-8"))), encoding="utf-8")
+        page.goto(rendered.as_uri())
         page.get_by_role("button", name="标记完成", exact=True).focus()
         page.keyboard.press("Enter")
         assert page.locator("#now").inner_text() == "读完并挑一个问题"
         assert page.locator("#progress").inner_text() == "已完成 1 / 4"
         page.locator("#controls summary").click()
-        page.get_by_label("哪里卡住了？").fill("虚构阻塞：材料暂时不可用")
+        page.get_by_label("哪里卡住了？").fill("虚构阻塞：材料暂时不可用 📚\nFictional note\ttext")
         page.get_by_role("button", name="记录阻塞", exact=True).click()
         assert "先解除阻塞" in page.locator("#now").inner_text()
         page.reload()
@@ -58,7 +60,21 @@ def check():
         page.locator("#import").set_input_files(invalid_encoding)
         expect(page.locator("#import")).to_have_value("")
         assert page.evaluate("JSON.stringify(localStorage)") == prior_storage
+        for note in ("Fictional\x00note", "Fictional\x7fnote", "Fictional\ud800note"):
+            corrupt = copy.deepcopy(saved)
+            corrupt["steps"][1]["reason"] = note
+            bad.write_text(json.dumps(corrupt), encoding="utf-8")
+            prior_storage = page.evaluate("JSON.stringify(localStorage)")
+            page.locator("#import").set_input_files(bad)
+            expect(page.locator("#import")).to_have_value("")
+            assert page.evaluate("JSON.stringify(localStorage)") == prior_storage
         page.get_by_role("button", name="解除阻塞", exact=True).click()
+        page.locator("#controls summary").click()
+        page.get_by_label("哪里卡住了？").fill("Fictional\x7fnote")
+        prior_storage = page.evaluate("JSON.stringify(localStorage)")
+        page.get_by_role("button", name="记录阻塞", exact=True).click()
+        assert page.evaluate("JSON.stringify(localStorage)") == prior_storage
+        expect(page.locator("#message")).not_to_be_empty()
         for _ in range(3):
             page.get_by_role("button", name="标记完成", exact=True).click()
         assert page.locator("#now").inner_text() == "全部步骤已标记完成"
